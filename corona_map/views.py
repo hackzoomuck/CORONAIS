@@ -32,13 +32,17 @@ def coIs_home(request):
     item_list_result = []
     for idx, item in enumerate(item_list, 1):
         item_dict = {}
+        # 시도명(한글)
         item_dict['gubun'] = item.find('gubun').string
-        item_dict['gubuncn'] = item.find('gubuncn').string
+        # 시도명(영어)
         item_dict['gubunen'] = item.find('gubunen').string
+        # 전일대비 증감 수
         item_dict['incdec'] = item.find('incdec').string
+        # 격리 해제 수
         item_dict['isolclearcnt'] = item.find('isolclearcnt').string
+        # 10만명당 발생률
         item_dict['qurrate'] = item.find('qurrate').string
-
+        # 사망자 수
         item_dict['deathcnt'] = item.find('deathcnt').string
         # 격리중 환자수
         item_dict['isolingcnt'] = item.find('isolingcnt').string
@@ -49,12 +53,12 @@ def coIs_home(request):
 
         item_list_result.append(item_dict)
 
-    item_df = pd.DataFrame(columns=['decidecnt', 'clearcnt', 'examcnt', 'deathcnt'])
+    item_df = pd.DataFrame(columns=['gubun', 'gubunen', 'incdec', 'isolclearcnt', 'qurrate', 'deathcnt', 'isolingcnt', 'overflowcnt', 'localocccnt'])
     for a in item_list_result:
         a_object = pd.Series(a)
         item_df = item_df.append(a_object, ignore_index=True)
 
-    return render(request, 'corona_map/coIs_home.html', {'soup_data': item_list})
+    return render(request, 'corona_map/coIs_home.html', {'soup_data': item_list_result})
 
 
 def chart_bar(request):
@@ -83,16 +87,7 @@ def chart_bar(request):
     for a in item_list_result:
         a_object = pd.Series(a)
         item_df = item_df.append(a_object, ignore_index=True)
-    # f = plt.figure(figsize=(10, 5))
-    # gr = sns.barplot(data=item_df.sort_values(by='examcnt'))
-    # FigureCanvasAgg(f)
-    # buf = BytesIO()
-    # gr.savefig(buf, format='png')
-    # plt.close(f)
-    #
-    # response = HttpResponse(buf.getvalue(), content_type='image/png')
-    #
-    # return response
+
     totalCount = item_df[item_df.columns[-1]].sum()
     barPlotData = item_df[['']]
     context = {'totalCount': totalCount}
