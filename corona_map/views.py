@@ -65,11 +65,11 @@ def folium_page(request):
         series_obj = pd.Series(sido_data)
         data_df = data_df.append(series_obj, ignore_index=True)
 
-    # 서울시 중심부의 위도, 경도
-    seoul_center = [36.3, 127.8]
+    # 맵 켰을때 중심부의 위도, 경도
+    korea_center = [36.3, 127.8]
 
     # 맵이 center 에 위치하고, zoom 레벨은 7로 시작하는 맵 m
-    m = folium.Map(location=seoul_center, zoom_start=6)
+    m = folium.Map(location=korea_center, zoom_start=6)
 
     # Choropleth 레이어를 만들고, 맵 m에 추가
     folium.Choropleth(
@@ -77,10 +77,9 @@ def folium_page(request):
         data=data_df,
         columns=('시', '확진자'),
         key_on='feature.properties.CTP_KOR_NM',
-        fill_color='BuPu',
+        fill_color='PuRd',
         legend_name='확진자',).add_to(m)
     m = m._repr_html_()  # updated
-
     context = {'mapdata': m}
     return render(request, 'corona_map/folium_page.html', context)
 
@@ -118,9 +117,51 @@ def sidoinfo_state(request):
         for de in defcnt_tag:
             defcnt.append(de.text)
 
-        sido = list(zip(gubun, defcnt))
-
-        return render(request, 'corona_map/sidoinfo_state.html', {'soup_data':sido})
+        soup_sido_data_list = dict(zip(gubun, defcnt))
 
     else:
         return render(request, 'corona_map/coIs_home.html')
+
+    geo_sido_data = 'corona_map/static/json_data/korea_sido.json'
+
+    with open(geo_sido_data, "r", encoding="utf8") as f:
+        contents = f.read()
+        json_data = json.loads(contents)
+
+    data_df = pd.DataFrame(columns=['시', '확진자'])
+
+    sido_data_list = []
+
+    for k, v in soup_sido_data_list.items():
+        sido_data = {}
+        sido_data['시'] = k
+        sido_data['확진자'] = int(v)
+
+        sido_data_list.append(sido_data)
+
+    sido_data_list.pop(0)
+    sido_data_list.pop()
+    # print(sido_data_list)
+    for sido_data in sido_data_list:
+        series_obj = pd.Series(sido_data)
+        data_df = data_df.append(series_obj, ignore_index=True)
+
+    # 맵 켰을때 중심부의 위도, 경도
+    korea_center = [36.3, 127.8]
+
+    # 맵이 center 에 위치하고, zoom 레벨은 7로 시작하는 맵 m
+    m = folium.Map(location=korea_center, zoom_start=7)
+
+    # Choropleth 레이어를 만들고, 맵 m에 추가
+    folium.Choropleth(
+        geo_data=json_data,
+        data=data_df,
+        columns=('시', '확진자'),
+        key_on='feature.properties.CTP_KOR_NM',
+        fill_color='PuRd',
+        line_weight=2,
+        ).add_to(m)
+    m = m._repr_html_()  # updated
+    context = {'mapdata': m}
+    return render(request, 'corona_map/sidoinfo_state.html', context)
+

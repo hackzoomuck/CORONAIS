@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="{% static 'css/korea_map.css' %}">
 </head>
 <body>
-{{soup_data}}
+<div class="sido_data">
+{{mapdata|safe}}
+</div>
+
 </body>
 </html>
