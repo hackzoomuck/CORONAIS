@@ -90,6 +90,7 @@ DATABASES = {
         'PASSWORD':'python', # 계정 비밀번호
         'HOST':'192.168.0.16', # 데이테베이스 IP
         'PORT':'27017', # 데이터베이스 port
+        
     }
 }
 
