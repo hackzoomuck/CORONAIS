@@ -6,9 +6,6 @@ import folium
 import json
 import requests
 
-import matplotlib.pyplot as plt
-plt.rc("font", family="Malgun Gothic")
-
 # Create your views here.
 def coIs_home(request):
     return render(request, 'corona_map/coIs_home.html')
@@ -23,7 +20,7 @@ def seoul(request):
 
     folium.Marker(
         location=[37.5838699, 127.0565831],
-        popup=f'한국',
+        popup='한국',
         icon=folium.Icon(color='red', icon='star')
     ).add_to(m)
     folium.GeoJson(
@@ -73,6 +70,7 @@ def sidoinfo_state():
 # 한국 지도에서 시도별, 확진자 수
 # sidoinfo_state() 함수 사용
 def folium_page(request):
+
     soup_sido_data_list = sidoinfo_state()
     geo_sido_data = 'corona_map/static/json_data/korea_sido.json'
     with open(geo_sido_data, "r", encoding="utf8") as f:
@@ -111,8 +109,9 @@ def folium_page(request):
                        {'시':'광주','위도':35.16,'경도':126.85},{'시':'인천','위도':37.45,'경도':126.70},{'시':'대구','위도':35.87,'경도':128.60},\
                        {'시':'부산','위도':35.18,'경도':129.07},{'시':'서울','위도':37.56,'경도':126.97},]
     for si_ma in sido_lati_longi:
+        sido_html = '<h4>{}</h4><a href="http://127.0.0.1:8000/seoul/" target="_blank">{}</a>'.format(si_ma['시'], '서울')
         folium.Marker([si_ma['위도'], si_ma['경도']],
-            popup=si_ma['시'], #.decode('cp949').encode('utf-8')
+            popup=folium.map.Popup(sido_html, parse_html=False), #.decode('cp949').encode('utf-8')
             icon=folium.Icon(color='red', icon='star')
         ).add_to(m)
 
