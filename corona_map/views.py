@@ -4,8 +4,9 @@ import pandas as pd
 import folium
 import json
 
-import requests
-from bs4 import BeautifulSoup
+import matplotlib.pyplot as plt
+plt.rc("font", family="Malgun Gothic")
+
 
 
 # Create your views here.
@@ -22,7 +23,7 @@ def seoul(request):
 
     folium.Marker(
         location=[37.5838699, 127.0565831],
-        popup='University of Seoul',
+        popup=f'한국',
         icon=folium.Icon(color='red', icon='star')
     ).add_to(m)
     folium.GeoJson(
@@ -32,7 +33,6 @@ def seoul(request):
 
     m = m._repr_html_()  # updated
     context = {'my_map': m}
-
     return render(request, 'corona_map/seoul.html', context)
 
 # 시도별 api 에서 {시도, 확진자 수} 데이터 전처리 함수
@@ -112,7 +112,7 @@ def folium_page(request):
                        {'시':'부산','위도':35.18,'경도':129.07},{'시':'서울','위도':37.56,'경도':126.97},]
     for si_ma in sido_lati_longi:
         folium.Marker([si_ma['위도'], si_ma['경도']],
-            popup=si_ma['시'],
+            popup=si_ma['시'], #.decode('cp949').encode('utf-8')
             icon=folium.Icon(color='red', icon='star')
         ).add_to(m)
 
