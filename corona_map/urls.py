@@ -12,5 +12,8 @@ urlpatterns = [
     path('seoul/', views.seoul, name='seoul'),
 
     #
-    path('folium_page/', views.folium_page, name='folium')
+    path('folium_page/', views.folium_page, name='folium'),
+    # 완치자 데이터를 가져오는 페이지
+    path('cure_people/', views.cure_people ,name='cure_people')
+
 ]

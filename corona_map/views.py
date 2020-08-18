@@ -9,7 +9,60 @@ import requests
 import matplotlib.pyplot as plt
 plt.rc("font", family="Malgun Gothic")
 
-# Create your views here.
+def get_cnt_cure(sigun_url, cnt_tag, txt_tag):
+    res = requests.get(sigun_url)
+    if 200 <= res.status_code < 400:
+        html = res.text
+        soup = BeautifulSoup(html, 'html.parser')
+        counter_list = soup.select(cnt_tag)
+        txt_list = soup.select(txt_tag)
+        print('서울 : ', counter_list[3].text, txt_list[3].text)
+
+def cure_people(request):
+    sido_url_list = []
+
+    seoul_url = 'https://www.seoul.go.kr/coronaV/coronaStatus.do'
+    res = requests.get(seoul_url)
+    if 200 <= res.status_code < 400:
+        html = res.text
+        soup = BeautifulSoup(html, 'html.parser')
+        counter_list = soup.select('#container .counter')
+        txt_list = soup.select('#container .txt')
+        print('서울 : ', counter_list[3].text, txt_list[3].text)
+
+    jongro_url = 'https://www.jongno.go.kr/portalMain.do;jsessionid=WRbjo7mxihEc2FtUXnZ8KUhCfSD3fYAhm2iyQ17E3HY1FDdtV6TOPaw70mYWKyKW.was_servlet_engine1'
+    res = requests.get(jongro_url)
+    if 200 <= res.status_code < 400:
+        html = res.text
+        soup = BeautifulSoup(html, 'html.parser')
+        counter_list = soup.select('div.popup-body table td')
+        txt_list = soup.select('div.popup-body table th')
+        print('종로구 누적 {}: {}'.format(txt_list[1].text, counter_list[1].text))
+
+    junggu_url = 'http://www.junggu.seoul.kr/index.jsp#'
+    res = requests.get(junggu_url)
+    if 200 <= res.status_code < 400:
+        html = res.text
+        soup = BeautifulSoup(html, 'html.parser')
+        counter_list = soup.select('.sub_table1.popup_table .txt_center')
+        txt_list = soup.select('.sub_table1.popup_table .no-topborder')
+        print('중구 누적 {}자: {}'.format(txt_list[1].text, counter_list[1].text))
+
+    yongsan_url = 'http://www.yongsan.go.kr/index.htm'
+    res = requests.get(yongsan_url)
+    if 200 <= res.status_code < 400:
+        html = res.text
+        soup = BeautifulSoup(html, 'html.parser')
+        counter_list = soup.select('#wrap > div.layer-popup > div > div.popup-contents.virus > div > div:nth-child(1) > div > table > tbody > tr > td:nth-child(2)')
+        txt_list = soup.select('#wrap > div.layer-popup > div > div.popup-contents.virus > div > div:nth-child(1) > div > table > thead > tr:nth-child(2) > th:nth-child(2)')
+        print('용산', txt_list[0].text, counter_list[0].text)
+
+    
+
+
+
+    return render(request, 'corona_map/cure_people.html')
+
 def coIs_home(request):
     return render(request, 'corona_map/coIs_home.html')
 
@@ -171,6 +224,7 @@ def coIs_home(request):
         a_object = pd.Series(a)
         item_df = item_df.append(a_object, ignore_index=True)
     return render(request, 'corona_map/coIs_home.html', {'soup_data': item_list_result})
+
 def chart_bar(request):
     serviceKey = '67xjSd3vhpWMN4oQ3DztMgLyq4Aa1ugw1ssq%2FHeJAeniNIwyPspLp7XpNoa8mBbTJQPc3dAxqvtFm57fJIfq8w%3D%3D'
     numOfRows = 1000
