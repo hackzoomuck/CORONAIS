@@ -6,8 +6,8 @@ import folium
 import json
 import requests
 
-import matplotlib.pyplot as plt
-plt.rc("font", family="Malgun Gothic")
+# import matplotlib.pyplot as plt
+# plt.rc("font", family="Malgun Gothic")
 
 # Create your views here.
 def coIs_home(request):
@@ -152,19 +152,19 @@ def coIs_home(request):
         # 시도명(영어)
         item_dict['gubunen'] = item.find('gubunen').string
         # 전일대비 증감 수
-        item_dict['incdec'] = item.find('incdec').string
+        item_dict['incdec'] = int(item.find('incdec').string)
         # 격리 해제 수
-        item_dict['isolclearcnt'] = item.find('isolclearcnt').string
+        item_dict['isolclearcnt'] = int(item.find('isolclearcnt').string)
         # 10만명당 발생률
         item_dict['qurrate'] = item.find('qurrate').string
         # 사망자 수
-        item_dict['deathcnt'] = item.find('deathcnt').string
+        item_dict['deathcnt'] = int(item.find('deathcnt').string)
         # 격리중 환자수
-        item_dict['isolingcnt'] = item.find('isolingcnt').string
+        item_dict['isolingcnt'] = int(item.find('isolingcnt').string)
         # 해외유입 수
-        item_dict['overflowcnt'] = item.find('overflowcnt').string
+        item_dict['overflowcnt'] = int(item.find('overflowcnt').string)
         # 지역발생 수
-        item_dict['localocccnt'] = item.find('localocccnt').string
+        item_dict['localocccnt'] = int(item.find('localocccnt').string)
         item_list_result.append(item_dict)
     item_df = pd.DataFrame(columns=['gubun', 'gubunen', 'incdec', 'isolclearcnt', 'qurrate', 'deathcnt', 'isolingcnt', 'overflowcnt', 'localocccnt'])
     for a in item_list_result:
@@ -172,29 +172,86 @@ def coIs_home(request):
         item_df = item_df.append(a_object, ignore_index=True)
     return render(request, 'corona_map/coIs_home.html', {'soup_data': item_list_result})
 def chart_bar(request):
-    serviceKey = '67xjSd3vhpWMN4oQ3DztMgLyq4Aa1ugw1ssq%2FHeJAeniNIwyPspLp7XpNoa8mBbTJQPc3dAxqvtFm57fJIfq8w%3D%3D'
-    numOfRows = 1000
-    pageNo = 10
-    startCreateDt = '20200310'
-    endCreateDt = '20200814'  # datetime.datetime.now()
-    url = f'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson?serviceKey={serviceKey}&numOfRows={numOfRows}&pageNo={pageNo}&startCreateDt={startCreateDt}&endCreateDt={endCreateDt}'
-    response = requests.get(url)
-    html = response.text
+    # 수녕, 서율, 지은
+    sido_serviceKey = ['0',
+                       'hFxBvUwCFBcRvWK6wJdgZXgFmjnogBAgCMQ%2BWfZmCQngtc%2FkNb%2FvVqfS2ouV%2BxKMAbEbE94ZYhW3m6A3hxKyig%3D%3D',
+                       '2']
+    url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19SidoInfStateJson'
+    SERVICE_KEY = unquote(sido_serviceKey[1])
+    params = {
+        'serviceKey': SERVICE_KEY,
+        'pageNo': 10000,
+        'numOfRows': 100,
+        'startCreateDt': 20200511,
+        'endCreateDt': 20200818
+    }
+    res = requests.get(url, params=params)
+    html = res.text
     soup = BeautifulSoup(html, 'html.parser')
     item_list = soup.select('item')
     item_list_result = []
     for idx, item in enumerate(item_list, 1):
         item_dict = {}
-        item_dict['decidecnt'] = item.find('decidecnt').string
-        item_dict['clearcnt'] = item.find('clearcnt').string
-        item_dict['examcnt'] = item.find('examcnt').string
-        item_dict['deathcnt'] = item.find('deathcnt').string
+        # 시도명(한글)
+        item_dict['gubun'] = item.find('gubun').string
+        # 시도명(영어)
+        item_dict['gubunen'] = item.find('gubunen').string
+        # 전일대비 증감 수
+        item_dict['incdec'] = item.find('incdec').string
+        # 격리 해제 수
+        item_dict['isolclearcnt'] = item.find('isolclearcnt').string
+        # 10만명당 발생률
+        item_dict['qurrate'] = item.find('qurrate').string
+        # 사망자 수
+        item_dict['deathcnt'] = int(item.find('deathcnt').string)
+        # 격리중 환자수
+        item_dict['isolingcnt'] = item.find('isolingcnt').string
+        # 해외유입 수
+        item_dict['overflowcnt'] = item.find('overflowcnt').string
+        # 지역발생 수
+        item_dict['localocccnt'] = int(item.find('localocccnt').string)
         item_list_result.append(item_dict)
-    item_df = pd.DataFrame(columns=['decidecnt', 'clearcnt', 'examcnt', 'deathcnt'])
+    item_df = pd.DataFrame(
+        columns=['gubun', 'gubunen', 'incdec', 'isolclearcnt', 'qurrate', 'deathcnt', 'isolingcnt', 'overflowcnt',
+                 'localocccnt'])
     for a in item_list_result:
         a_object = pd.Series(a)
         item_df = item_df.append(a_object, ignore_index=True)
-    totalCount = item_df[item_df.columns[-1]].sum()
-    barPlotData = item_df[['']]
-    context = {'totalCount': totalCount}
+
+    totalCount = item_df['deathcnt'].sum()
+
+    barPlotData = item_df[['gubun', item_df.columns[-1]]].groupby('gubun').sum()
+    barPlotData = barPlotData.reset_index()
+    barPlotData.columns = ['gubun', 'localocccnt']
+    barPlotData = barPlotData.sort_values(by='localocccnt', ascending=False)
+    barPlotVals = barPlotData['localocccnt'].values.tolist()
+    gubunNames = barPlotData['gubun'].values.tolist()
+    context = {'totalCount': totalCount, 'barPlotVals': barPlotVals, 'gubunNames': gubunNames}
     return render(request, 'corona_map/chart_bar.html', context)
+
+
+def entire_corona_info(request):
+    # serviceKey = '67xjSd3vhpWMN4oQ3DztMgLyq4Aa1ugw1ssq%2FHeJAeniNIwyPspLp7XpNoa8mBbTJQPc3dAxqvtFm57fJIfq8w%3D%3D'
+    # numOfRows = 1000
+    # pageNo = 10
+    # startCreateDt = '20200310'
+    # endCreateDt = '20200814'  # datetime.datetime.now()
+    # url = f'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson?serviceKey={serviceKey}&numOfRows={numOfRows}&pageNo={pageNo}&startCreateDt={startCreateDt}&endCreateDt={endCreateDt}'
+    # response = requests.get(url)
+    # html = response.text
+    # soup = BeautifulSoup(html, 'html.parser')
+    # item_list = soup.select('item')
+    # item_list_result = []
+    # for idx, item in enumerate(item_list, 1):
+    #     item_dict = {}
+    #     item_dict['decidecnt'] = item.find('decidecnt').string
+    #     item_dict['clearcnt'] = item.find('clearcnt').string
+    #     item_dict['examcnt'] = item.find('examcnt').string
+    #     item_dict['deathcnt'] = item.find('deathcnt').string
+    #     item_dict['statedt'] = item.find('statedt').string
+    #     item_list_result.append(item_dict)
+    # item_df = pd.DataFrame(columns=['decidecnt', 'clearcnt', 'examcnt', 'deathcnt', 'statedt'])
+    # for a in item_list_result:
+    #     a_object = pd.Series(a)
+    #     item_df = item_df.append(a_object, ignore_index=True)
+    return render(request, '')
