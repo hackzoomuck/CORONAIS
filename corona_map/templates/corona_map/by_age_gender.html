@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+canvas{
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+}
+</style>
+{% load static %}
+	<script src="{% static 'js/Chart.min.js' %}"></script>
+	<script src="{% static 'js/utils.js' %}"></script>
+	<script>
+		var color = Chart.helpers.color;
+		var barChartDataOld = {
+			labels: {{oldGubunNames|safe}},
+			datasets: [{
+				label: '연령별 치명률',
+				backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+				borderColor: window.chartColors.red,
+				borderWidth: 1,
+				data: {{oldPlotVals|safe}}
+			}]
+		};
+
+		var barChartDataGender = {
+			labels: {{genderGubunNames|safe}},
+			datasets: [{
+				label: '성별 치명률',
+				backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+				borderColor: window.chartColors.red,
+				borderWidth: 1,
+				lineTension:0.0,
+				data: {{genderPlotVals|safe}}
+			}]
+		};
+
+		window.onload = function() {
+
+			var ctx = document.getElementById('old_canvas').getContext('2d');
+			window.myBar = new Chart(ctx, {
+				type: 'bar',
+				data: barChartDataOld,
+				options: {
+					responsive: true,
+					legend: {
+						position: 'top',
+					},
+					title: {
+						display: true,
+						text: '연령별 치명률 차트'
+					}
+				}
+			});
+
+			var ctx = document.getElementById('gender_canvas').getContext('2d');
+			window.myBar = new Chart(ctx, {
+				type: 'bar',
+				data: barChartDataGender,
+				options: {
+					responsive: true,
+					legend: {
+						position: 'top',
+					},
+					title: {
+						display: true,
+						text: '성별 치명률 차트'
+					},
+					 scales: {
+						yAxes: [{
+							ticks: {
+								suggestedMin: 0,
+								suggestedMax: 3
+							}
+						}]
+					}
+				}
+			});
+		};
+	</script>
+<body>
+	<div id="container" style="width: 75%;">
+		<canvas id="old_canvas"></canvas>
+	</div>
+
+	<div id="container_gender" style="width: 75%;">
+		<canvas id="gender_canvas"></canvas>
+	</div>
+</body>
+</html>

@@ -9,9 +9,13 @@ import requests
 # import matplotlib.pyplot as plt
 # plt.rc("font", family="Malgun Gothic")
 
-# Create your views here.
-def coIs_home(request):
-    return render(request, 'corona_map/coIs_home.html')
+
+# 템플릿 적용
+def cois_main(request):
+    #return render(request, 'corona_map/cois_main.html')
+    return render(request, 'corona_map/index.html')
+
+
 
 # 서울 지도
 def seoul(request):
@@ -170,7 +174,8 @@ def coIs_home(request):
     for a in item_list_result:
         a_object = pd.Series(a)
         item_df = item_df.append(a_object, ignore_index=True)
-    return render(request, 'corona_map/coIs_home.html', {'soup_data': item_list_result})
+    return render(request, 'corona_map/coIs_home.html', {'soup_data': soup})
+
 def chart_bar(request):
     # 수녕, 서율, 지은
     sido_serviceKey = ['0',
@@ -180,9 +185,9 @@ def chart_bar(request):
     SERVICE_KEY = unquote(sido_serviceKey[1])
     params = {
         'serviceKey': SERVICE_KEY,
-        'pageNo': 10000,
+        'pageNo': 100,
         'numOfRows': 100,
-        'startCreateDt': 20200511,
+        'startCreateDt': 20200811,
         'endCreateDt': 20200818
     }
     res = requests.get(url, params=params)
@@ -192,6 +197,10 @@ def chart_bar(request):
     item_list_result = []
     for idx, item in enumerate(item_list, 1):
         item_dict = {}
+        # 등록일시분초 2020-08-14 10:36:59.393
+        item_dict['createdt'] = item.find('createdt').string
+        # 기준일시2020년 08월 14일 00시
+        item_dict['stdday'] = item.find('stdday').string
         # 시도명(한글)
         item_dict['gubun'] = item.find('gubun').string
         # 시도명(영어)
@@ -212,7 +221,7 @@ def chart_bar(request):
         item_dict['localocccnt'] = int(item.find('localocccnt').string)
         item_list_result.append(item_dict)
     item_df = pd.DataFrame(
-        columns=['gubun', 'gubunen', 'incdec', 'isolclearcnt', 'qurrate', 'deathcnt', 'isolingcnt', 'overflowcnt',
+        columns=['createdt', 'stdday', 'gubun', 'gubunen', 'incdec', 'isolclearcnt', 'qurrate', 'deathcnt', 'isolingcnt', 'overflowcnt',
                  'localocccnt'])
     for a in item_list_result:
         a_object = pd.Series(a)
@@ -220,38 +229,81 @@ def chart_bar(request):
 
     totalCount = item_df['deathcnt'].sum()
 
-    barPlotData = item_df[['gubun', item_df.columns[-1]]].groupby('gubun').sum()
+    # 지역별 확진자 현황
+    barPlotData = item_df[['gubun', 'localocccnt']].groupby('gubun').sum()
     barPlotData = barPlotData.reset_index()
+    barPlotData = barPlotData.loc[barPlotData['gubun'] != '합계']
     barPlotData.columns = ['gubun', 'localocccnt']
     barPlotData = barPlotData.sort_values(by='localocccnt', ascending=False)
     barPlotVals = barPlotData['localocccnt'].values.tolist()
     gubunNames = barPlotData['gubun'].values.tolist()
-    context = {'totalCount': totalCount, 'barPlotVals': barPlotVals, 'gubunNames': gubunNames}
+
+    # 날자별 코로나 현황
+    lineChartData = item_df[['stdday', item_df.columns[-1]]].groupby('stdday').sum()
+    lineChartData = lineChartData.reset_index()
+    lineChartData.columns = ['stdday', 'localocccnt']
+    lineChartData = lineChartData.sort_values(by='localocccnt', ascending=True)
+    lineChartVals = lineChartData['localocccnt'].values.tolist()
+    dateTimes = lineChartData['stdday'].values.tolist()
+
+    context = {'totalCount': totalCount, 'barPlotVals': barPlotVals, 'gubunNames': gubunNames, 'lineChartVals': lineChartVals, 'dateTimes': dateTimes}
     return render(request, 'corona_map/chart_bar.html', context)
 
 
-def entire_corona_info(request):
-    # serviceKey = '67xjSd3vhpWMN4oQ3DztMgLyq4Aa1ugw1ssq%2FHeJAeniNIwyPspLp7XpNoa8mBbTJQPc3dAxqvtFm57fJIfq8w%3D%3D'
-    # numOfRows = 1000
-    # pageNo = 10
-    # startCreateDt = '20200310'
-    # endCreateDt = '20200814'  # datetime.datetime.now()
-    # url = f'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson?serviceKey={serviceKey}&numOfRows={numOfRows}&pageNo={pageNo}&startCreateDt={startCreateDt}&endCreateDt={endCreateDt}'
-    # response = requests.get(url)
-    # html = response.text
-    # soup = BeautifulSoup(html, 'html.parser')
-    # item_list = soup.select('item')
-    # item_list_result = []
-    # for idx, item in enumerate(item_list, 1):
-    #     item_dict = {}
-    #     item_dict['decidecnt'] = item.find('decidecnt').string
-    #     item_dict['clearcnt'] = item.find('clearcnt').string
-    #     item_dict['examcnt'] = item.find('examcnt').string
-    #     item_dict['deathcnt'] = item.find('deathcnt').string
-    #     item_dict['statedt'] = item.find('statedt').string
-    #     item_list_result.append(item_dict)
-    # item_df = pd.DataFrame(columns=['decidecnt', 'clearcnt', 'examcnt', 'deathcnt', 'statedt'])
-    # for a in item_list_result:
-    #     a_object = pd.Series(a)
-    #     item_df = item_df.append(a_object, ignore_index=True)
-    return render(request, '')
+def chart_bar_by_age_gender(request):
+    serviceKey = '67xjSd3vhpWMN4oQ3DztMgLyq4Aa1ugw1ssq%2FHeJAeniNIwyPspLp7XpNoa8mBbTJQPc3dAxqvtFm57fJIfq8w%3D%3D'
+    numOfRows = 10
+    pageNo = 10
+    startCreateDt = '20200310'
+    endCreateDt = '20200814'  # datetime.datetime.now()
+    url = f'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19GenAgeCaseInfJson?serviceKey={serviceKey}&numOfRows={numOfRows}&pageNo={pageNo}&startCreateDt={startCreateDt}&endCreateDt={endCreateDt}'
+    response = requests.get(url)
+    html = response.text
+    soup = BeautifulSoup(html, 'html.parser')
+    item_list = soup.select('item')
+    item_list_result = []
+    for idx, item in enumerate(item_list, 1):
+        item_dict = {}
+        # 확진자
+        item_dict['confcase'] = int(item.find('confcase').string)
+        # 확진률
+        item_dict['confcaserate'] = item.find('confcaserate').string
+        # 등록일시분초
+        item_dict['createdt'] = item.find('createdt').string
+        # 치명률
+        item_dict['criticalrate'] = float(item.find('criticalrate').string)
+        # 사망자
+        item_dict['death'] = int(item.find('death').string)
+        # 사망률
+        item_dict['deathrate'] = item.find('deathrate').string
+        # 구분(성별,연령별)0-9
+        item_dict['gubun'] = item.find('gubun').string
+
+        item_list_result.append(item_dict)
+    item_df = pd.DataFrame(columns=['confcase', 'confcaserate', 'createdt', 'criticalrate', 'death', 'deathrate', 'gubun'])
+    for a in item_list_result:
+        a_object = pd.Series(a)
+        item_df = item_df.append(a_object, ignore_index=True)
+
+    totalCount = item_df['death'].sum()
+
+    # 연령별 치명률 시각화
+    oldPlotData = item_df[['gubun', 'criticalrate']].groupby('gubun').mean()
+    oldPlotData = oldPlotData.reset_index()
+    oldPlotData.columns = ['gubun', 'criticalrate']
+    oldPlotData = oldPlotData.sort_values(by='criticalrate', ascending=False)
+    oldPlotData = oldPlotData.loc[(oldPlotData['gubun'] != '여성') & (oldPlotData['gubun'] != '남성')]
+    oldPlotVals = oldPlotData['criticalrate'].values.tolist()
+    oldGubunNames = oldPlotData['gubun'].values.tolist()
+
+    # 성별 치명률 시각화
+    genderPlotData = item_df[['gubun', 'criticalrate']].groupby('gubun').mean()
+    genderPlotData = genderPlotData.reset_index()
+    genderPlotData.columns = ['gubun', 'criticalrate']
+    genderPlotData = genderPlotData.sort_values(by='criticalrate', ascending=False)
+    genderPlotData = genderPlotData.loc[(genderPlotData['gubun'] == '여성') | (genderPlotData['gubun'] == '남성')]
+    genderPlotVals = genderPlotData['criticalrate'].values.tolist()
+    genderGubunNames = genderPlotData['gubun'].values.tolist()
+
+    context = {'totalCount': totalCount, 'oldPlotVals': oldPlotVals, 'oldGubunNames': oldGubunNames, 'genderPlotVals': genderPlotVals, 'genderGubunNames': genderGubunNames}
+    return render(request, 'corona_map/by_age_gender.html', context)
