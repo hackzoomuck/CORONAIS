@@ -12,8 +12,79 @@ import requests
 
 # 템플릿 적용
 def cois_main(request):
-    #return render(request, 'corona_map/cois_main.html')
-    return render(request, 'corona_map/index.html')
+    # 수녕, 서율, 지은
+    sido_serviceKey = ['0',
+                       'hFxBvUwCFBcRvWK6wJdgZXgFmjnogBAgCMQ%2BWfZmCQngtc%2FkNb%2FvVqfS2ouV%2BxKMAbEbE94ZYhW3m6A3hxKyig%3D%3D',
+                       '2']
+    url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19SidoInfStateJson'
+    SERVICE_KEY = unquote(sido_serviceKey[1])
+    params = {
+        'serviceKey': SERVICE_KEY,
+        'pageNo': 100,
+        'numOfRows': 100,
+        'startCreateDt': 20200811,
+        'endCreateDt': 20200818
+    }
+    res = requests.get(url, params=params)
+    html = res.text
+    soup = BeautifulSoup(html, 'html.parser')
+    item_list = soup.select('item')
+    item_list_result = []
+    for idx, item in enumerate(item_list, 1):
+        item_dict = {}
+        # 등록일시분초 2020-08-14 10:36:59.393
+        item_dict['createdt'] = item.find('createdt').string
+        # 기준일시2020년 08월 14일 00시
+        item_dict['stdday'] = item.find('stdday').string
+        # 시도명(한글)
+        item_dict['gubun'] = item.find('gubun').string
+        # 시도명(영어)
+        item_dict['gubunen'] = item.find('gubunen').string
+        # 전일대비 증감 수
+        item_dict['incdec'] = item.find('incdec').string
+        # 격리 해제 수
+        item_dict['isolclearcnt'] = item.find('isolclearcnt').string
+        # 10만명당 발생률
+        item_dict['qurrate'] = item.find('qurrate').string
+        # 사망자 수
+        item_dict['deathcnt'] = int(item.find('deathcnt').string)
+        # 격리중 환자수
+        item_dict['isolingcnt'] = item.find('isolingcnt').string
+        # 해외유입 수
+        item_dict['overflowcnt'] = item.find('overflowcnt').string
+        # 지역발생 수
+        item_dict['localocccnt'] = int(item.find('localocccnt').string)
+        item_list_result.append(item_dict)
+    item_df = pd.DataFrame(
+        columns=['createdt', 'stdday', 'gubun', 'gubunen', 'incdec', 'isolclearcnt', 'qurrate', 'deathcnt',
+                 'isolingcnt', 'overflowcnt',
+                 'localocccnt'])
+    for a in item_list_result:
+        a_object = pd.Series(a)
+        item_df = item_df.append(a_object, ignore_index=True)
+
+    totalCount = item_df['deathcnt'].sum()
+
+    # 지역별 확진자 현황
+    barPlotData = item_df[['gubun', 'localocccnt']].groupby('gubun').sum()
+    barPlotData = barPlotData.reset_index()
+    barPlotData = barPlotData.loc[barPlotData['gubun'] != '합계']
+    barPlotData.columns = ['gubun', 'localocccnt']
+    barPlotData = barPlotData.sort_values(by='localocccnt', ascending=False)
+    barPlotVals = barPlotData['localocccnt'].values.tolist()
+    gubunNames = barPlotData['gubun'].values.tolist()
+
+    # 날자별 코로나 현황
+    lineChartData = item_df[['stdday', item_df.columns[-1]]].groupby('stdday').sum()
+    lineChartData = lineChartData.reset_index()
+    lineChartData.columns = ['stdday', 'localocccnt']
+    lineChartData = lineChartData.sort_values(by='localocccnt', ascending=True)
+    lineChartVals = lineChartData['localocccnt'].values.tolist()
+    dateTimes = lineChartData['stdday'].values.tolist()
+
+    context = {'totalCount': totalCount, 'barPlotVals': barPlotVals, 'gubunNames': gubunNames,
+               'lineChartVals': lineChartVals, 'dateTimes': dateTimes}
+    return render(request, 'corona_map/index.html', context)
 
 
 
