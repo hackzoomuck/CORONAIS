@@ -1,7 +1,5 @@
 from django.db import models
 
-# Create your models here.
-
 # 수녕- 전국 현황 데이터 모델
 '''
 확진자 수 : decidecnt
