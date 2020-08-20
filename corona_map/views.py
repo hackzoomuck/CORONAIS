@@ -5,6 +5,12 @@ import pandas as pd
 import folium
 import json
 import requests
+import corona_map.MongoDbManager as comong
+from corona_map.Api.Infection_city import infection_city
+import pymongo
+
+# 현재날짜를 사용하기 위한 모듈
+import datetime
 
 # Create your views here.
 def coIs_home(request):
@@ -31,6 +37,7 @@ def seoul(request):
     m = m._repr_html_()  # updated
     context = {'my_map': m}
     return render(request, 'corona_map/seoul.html', context)
+
 
 # 시도별 api 에서 {시도, 확진자 수} 데이터 전처리 함수
 def sidoinfo_state():
@@ -66,11 +73,22 @@ def sidoinfo_state():
 
         sido = dict(zip(gubun,defcnt))
         return sido
+    # now = datetime.datetime.now()
+    # nowDate = int(now.strftime('%Y%m%d'))
+    # seoul = comong.Infection_City().get_users_from_collection({'id':nowDate})
+    # seoul_list=[]
+    # for s in seoul:
+    #     seoul_list.append(s)
+    # return render(request, 'corona_map/sidoinfo_state.html', {'soup_data': seoul_list})
+
 
 # 한국 지도에서 시도별, 확진자 수
 # sidoinfo_state() 함수 사용
 def folium_page(request):
-
+    # mongodb collection infection_city에 api request해서 데이터 저장.
+    infection_city()
+    # seoul = comong.Infection_City().get_users_from_collection({})
+    # print(seoul)
     soup_sido_data_list = sidoinfo_state()
     geo_sido_data = 'corona_map/static/json_data/korea_sido.json'
     with open(geo_sido_data, "r", encoding="utf8") as f:
@@ -85,7 +103,7 @@ def folium_page(request):
         sido_data_list.append(sido_data)
     sido_data_list.pop(0)
     sido_data_list.pop()
-    # print(sido_data_list)
+
     for sido_data in sido_data_list:
         series_obj = pd.Series(sido_data)
         data_df = data_df.append(series_obj, ignore_index=True)
@@ -109,7 +127,7 @@ def folium_page(request):
                        {'시':'광주','위도':35.16,'경도':126.85},{'시':'인천','위도':37.45,'경도':126.70},{'시':'대구','위도':35.87,'경도':128.60},\
                        {'시':'부산','위도':35.18,'경도':129.07},{'시':'서울','위도':37.56,'경도':126.97},]
     for si_ma in sido_lati_longi:
-        sido_html = '<h4>{}</h4><a href="http://127.0.0.1:8000/seoul/" target="_blank">{}</a>'.format(si_ma['시'], '서울')
+        sido_html = '<h4>{}</h4><a href="http://192.168.0.16:8000/seoul/" target="_blank">{}</a>'.format(si_ma['시'], '서울')
         folium.Marker([si_ma['위도'], si_ma['경도']],
             popup=folium.map.Popup(sido_html, parse_html=False), #.decode('cp949').encode('utf-8')
             icon=folium.Icon(color='red', icon='star')
@@ -170,6 +188,7 @@ def coIs_home(request):
         a_object = pd.Series(a)
         item_df = item_df.append(a_object, ignore_index=True)
     return render(request, 'corona_map/coIs_home.html', {'soup_data': item_list_result})
+
 def chart_bar(request):
     serviceKey = '67xjSd3vhpWMN4oQ3DztMgLyq4Aa1ugw1ssq%2FHeJAeniNIwyPspLp7XpNoa8mBbTJQPc3dAxqvtFm57fJIfq8w%3D%3D'
     numOfRows = 1000
@@ -197,3 +216,4 @@ def chart_bar(request):
     barPlotData = item_df[['']]
     context = {'totalCount': totalCount}
     return render(request, 'corona_map/chart_bar.html', context)
+
