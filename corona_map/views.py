@@ -279,6 +279,7 @@ def seoul(request):
         geo = json.loads(sl.read())
         sl.close()
 
+
     folium.Marker(
         location=[37.5838699, 127.0565831],
         popup=f'한국',
@@ -375,7 +376,6 @@ def folium_page(request):
             popup=si_ma['시'], #.decode('cp949').encode('utf-8')
             icon=folium.Icon(color='red', icon='star')
         ).add_to(m)
-
 
     m = m._repr_html_()  # updated
     context = {'mapdata': m}
