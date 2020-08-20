@@ -10,12 +10,8 @@ from corona_map.Api.Infection_city import infection_city
 import pymongo
 # 현재날짜를 사용하기 위한 모듈
 import datetime
-# import matplotlib.pyplot as plt
-# plt.rc("font", family="Malgun Gothic")
 import re
-import matplotlib.pyplot as plt
 
-plt.rc("font", family="Malgun Gothic")
 '''
  @ sigu_url 크롤링 주소
  @ sigu_name = 도시 이름
