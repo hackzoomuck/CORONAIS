@@ -8,13 +8,13 @@ import requests
 import re
 import matplotlib.pyplot as plt
 plt.rc("font", family="Malgun Gothic")
+
 '''
  @ sigu_url 크롤링 주소
- @ sigu_name = 도시 이름
- @ cure_cnt_tag = 완치자 태그
- @ sub_cure_cnt_tag = 완치자 계산을 위한 서브 태그
+ @ sigu_name 도시 이름
+ @ cure_cnt_tag 완치자 태그
+ @ sub_cure_cnt_tag 완치자 계산을 위한 서브 태그
 '''
-
 def get_cnt_cure(sigu_url, sigu_name, cure_cnt_tag, sub_cure_cnt_tag):
 
     res_headers = {
@@ -352,10 +352,12 @@ def folium_page(request):
     for sido_data in sido_data_list:
         series_obj = pd.Series(sido_data)
         data_df = data_df.append(series_obj, ignore_index=True)
+
     # 서울시 중심부의 위도, 경도
     seoul_center = [36.3, 127.8]
     # 맵이 center 에 위치하고, zoom 레벨은 7로 시작하는 맵 m
     m = folium.Map(location=seoul_center, zoom_start=6)
+
     # Choropleth 레이어를 만들고, 맵 m에 추가
     folium.Choropleth(
         geo_data=json_data,
@@ -376,6 +378,7 @@ def folium_page(request):
             popup=si_ma['시'], #.decode('cp949').encode('utf-8')
             icon=folium.Icon(color='red', icon='star')
         ).add_to(m)
+
 
     m = m._repr_html_()  # updated
     context = {'mapdata': m}
