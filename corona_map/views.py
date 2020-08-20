@@ -8,12 +8,11 @@ import requests
 import re
 import matplotlib.pyplot as plt
 plt.rc("font", family="Malgun Gothic")
-
 '''
  @ sigu_url 크롤링 주소
- @ sigu_name 도시 이름
- @ cure_cnt_tag 완치자 태그
- @ sub_cure_cnt_tag 완치자 계산을 위한 서브 태그
+ @ sigu_name = 도시 이름
+ @ cure_cnt_tag = 완치자 태그
+ @ sub_cure_cnt_tag = 완치자 계산을 위한 서브 태그
 '''
 def get_cnt_cure(sigu_url, sigu_name, cure_cnt_tag, sub_cure_cnt_tag):
 
@@ -82,14 +81,6 @@ def cure_people(request):
     cities_data_list.append(city_data_dict)
 
     city_data_dict = {
-        'city_url': 'http://www.sd.go.kr/sd/intro.do',
-        'city_name': '성동구',
-        'cure_cnt_tag': '#content > div.top_box > div > div.top_area1 > ul > li.alone > span:nth-child(3) > em',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
         'city_url': 'http://www.ddm.go.kr/',
         'city_name': '동대문구',
         'cure_cnt_tag': '#contents > div.inner > section:nth-child(1) > div > table > tbody > tr > td:nth-child(3) > strong',
@@ -101,6 +92,14 @@ def cure_people(request):
         'city_url': 'http://c19.jungnang.go.kr/',
         'city_name': '중랑구',
         'cure_cnt_tag': '#jn_intro_wrap > div > div.intro_tbl_box > dl.intro_tbl.jn_intro_tbl > dd:nth-child(3) > span',
+        'sub_cure_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+
+    city_data_dict = {
+        'city_url': 'http://www.sd.go.kr/sd/intro.do',
+        'city_name': '성동구',
+        'cure_cnt_tag': '#content > div.top_box > div > div.top_area1 > ul > li.alone > span:nth-child(3) > em',
         'sub_cure_cnt_tag': ''
     }
     cities_data_list.append(city_data_dict)
@@ -259,8 +258,6 @@ def cure_people(request):
         cure_cnt_tag = city_data['cure_cnt_tag'] # 완치자 누적
         sub_cure_cnt_tag = city_data['sub_cure_cnt_tag'] # 실험한거야
         get_cnt_cure(city_url, city_name, cure_cnt_tag, sub_cure_cnt_tag)
-
-
 
     ######################### 강남은 강남 JSON 따로 있으니 처리 빼야함 ####################
     city_url = 'http://www.gangnam.go.kr/etc/json/covid19.json'
