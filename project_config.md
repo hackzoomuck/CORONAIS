@@ -11,5 +11,4 @@
 - folium
 - pymongo
 - pandas
-- matplotlib
 
