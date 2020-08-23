@@ -1,0 +1,16 @@
+{% extends 'news_board/base.html' %}
+
+{% block content%}
+    <h1>코로나 뉴스 페이지 테스트이다.</h1>
+    {% for board in board_list %}
+        <div class="post">
+{% comment %}            <div class="date">
+                <p>published : {{board.title}}</p>
+            </div>{% endcomment %}
+                <h1><a href="#">{{board.title}}</a></h1>
+                <a href="#">{{board.content}}</a>
+        </div>
+        {% empty %}
+            <div>요청하신 Post가 존재하지 않습니다. </div>
+    {% endfor %}
+{% endblock %}
