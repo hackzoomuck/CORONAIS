@@ -473,25 +473,20 @@ def folium_page(request):
     context = {'mapdata': m}
     return render(request, 'corona_map/folium_page.html', context)
 
-'''
-확진자 수 : decidecnt
-격리해제 수 : clearcnt
-검사진행 수 : examcnt
-사망자 수 : deathcnt
-'''
+
 def coIs_home(request):
     # 수녕, 서율, 지은
     sido_serviceKey = ['0',
-                       'hFxBvUwCFBcRvWK6wJdgZXgFmjnogBAgCMQ%2BWfZmCQngtc%2FkNb%2FvVqfS2ouV%2BxKMAbEbE94ZYhW3m6A3hxKyig%3D%3D',
+                       'BjW9a8K51p0oRJ0hl%2BBpizJzZ9gT3e%2Beb75QhG9kXdeK9ENW7CCAl9nX28%2BRD97JlAsDrTv7StIwvUPCxA4iTw%3D%3D',
                        '2']
-    url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19SidoInfStateJson'
+    url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson'
     SERVICE_KEY = unquote(sido_serviceKey[1])
     params = {
         'serviceKey': SERVICE_KEY,
-        'pageNo': 100,
-        'numOfRows': 1,
+        'pageNo': 10,
+        'numOfRows': 10,
         'startCreateDt': 20200811,
-        'endCreateDt': 20200814
+        'endCreateDt': 20200818
     }
     res = requests.get(url, params=params)
     html = res.text
@@ -500,30 +495,38 @@ def coIs_home(request):
     item_list_result = []
     for idx, item in enumerate(item_list, 1):
         item_dict = {}
-        # 시도명(한글)
-        item_dict['gubun'] = item.find('gubun').string
-        # 시도명(영어)
-        item_dict['gubunen'] = item.find('gubunen').string
-        # 전일대비 증감 수
-        item_dict['incdec'] = int(item.find('incdec').string)
-        # 격리 해제 수
-        item_dict['isolclearcnt'] = int(item.find('isolclearcnt').string)
-        # 10만명당 발생률
-        item_dict['qurrate'] = item.find('qurrate').string
+        try:
+            # 확진자 수
+            item_dict['decidecnt'] = int(item.find('decidecnt').string)
+        except (AttributeError, KeyError):
+            item_dict['decidecnt'] = 0
+        # 격리해제 수
+        try:
+            item_dict['clearcnt'] = int(item.find('clearcnt').string)
+        except (AttributeError, KeyError):
+            item_dict['clearcnt'] = 0
+        # 검사진행 수
+        item_dict['examcnt'] = int(item.find('examcnt').string)
         # 사망자 수
         item_dict['deathcnt'] = int(item.find('deathcnt').string)
-        # 격리중 환자수
-        item_dict['isolingcnt'] = int(item.find('isolingcnt').string)
-        # 해외유입 수
-        item_dict['overflowcnt'] = int(item.find('overflowcnt').string)
-        # 지역발생 수
-        item_dict['localocccnt'] = int(item.find('localocccnt').string)
+        # 결과 음성 수
+        item_dict['resutlnegcnt'] = int(item.find('resutlnegcnt').string)
+        # 누적 검사 수
+        item_dict['accexamcnt'] = int(item.find('accexamcnt').string)
+        # 누적 검사 완료 수
+        item_dict['accexamcompcnt'] = int(item.find('accexamcompcnt').string)
+        # 누적 환진률
+        item_dict['accdefrate'] = item.find('accdefrate').string
+        # 기준일
+        item_dict['statedt'] = item.find('statedt').string
+        # 기준시간
+        item_dict['statetime'] = item.find('statetime').string
         item_list_result.append(item_dict)
-    item_df = pd.DataFrame(columns=['gubun', 'gubunen', 'incdec', 'isolclearcnt', 'qurrate', 'deathcnt', 'isolingcnt', 'overflowcnt', 'localocccnt'])
-    for a in item_list_result:
-        a_object = pd.Series(a)
-        item_df = item_df.append(a_object, ignore_index=True)
-    return render(request, 'corona_map/coIs_home.html', {'soup_data': soup})
+    # item_df = pd.DataFrame(columns=['gubun', 'gubunen', 'incdec', 'isolclearcnt', 'qurrate', 'deathcnt', 'isolingcnt', 'overflowcnt', 'localocccnt'])
+    # for a in item_list_result:
+    #     a_object = pd.Series(a)
+    #     item_df = item_df.append(a_object, ignore_index=True)
+    return render(request, 'corona_map/coIs_home.html', {'soup_data': item_list_result})
 
 def chart_bar(request):
     # 수녕, 서율, 지은
@@ -599,15 +602,22 @@ def chart_bar(request):
     return render(request, 'corona_map/chart_bar.html', context)
 
 
+
 def chart_bar_by_age_gender(request):
 
-    serviceKey = '67xjSd3vhpWMN4oQ3DztMgLyq4Aa1ugw1ssq%2FHeJAeniNIwyPspLp7XpNoa8mBbTJQPc3dAxqvtFm57fJIfq8w%3D%3D'
-    numOfRows = 10
-    pageNo = 10
-    startCreateDt = '20200310'
-    endCreateDt = '20200814'  # datetime.datetime.now()
-    url = f'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19GenAgeCaseInfJson?serviceKey={serviceKey}&numOfRows={numOfRows}&pageNo={pageNo}&startCreateDt={startCreateDt}&endCreateDt={endCreateDt}'
-    response = requests.get(url)
+    sido_serviceKey = ['0',
+                       '67xjSd3vhpWMN4oQ3DztMgLyq4Aa1ugw1ssq%2FHeJAeniNIwyPspLp7XpNoa8mBbTJQPc3dAxqvtFm57fJIfq8w%3D%3D',
+                       '2']
+    url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19SidoInfStateJson'
+    SERVICE_KEY = unquote(sido_serviceKey[1])
+    params = {
+        'serviceKey': SERVICE_KEY,
+        'pageNo': 10,
+        'numOfRows': 10,
+        'startCreateDt': 20200811,
+        'endCreateDt': 20200818
+    }
+    response = requests.get(url, params=params)
     html = response.text
     soup = BeautifulSoup(html, 'html.parser')
     item_list = soup.select('item')
@@ -621,7 +631,10 @@ def chart_bar_by_age_gender(request):
         # 등록일시분초
         item_dict['createdt'] = item.find('createdt').string
         # 치명률
-        item_dict['criticalrate'] = float(item.find('criticalrate').string)
+        try:
+            item_dict['criticalrate'] = float(item.find('criticalrate').string)
+        except Exception:
+            item_dict['criticalrate'] = 0
         # 사망자
         item_dict['death'] = int(item.find('death').string)
         # 사망률
