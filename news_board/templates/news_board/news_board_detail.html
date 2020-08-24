@@ -1,0 +1,31 @@
+{% extends 'news_board/base.html' %}
+
+{% block content%}
+
+    <div class="post">
+        {% if post.published_date%}
+        <div class="date">
+            {{post.published_date}}
+        </div>
+        {% endif %}
+
+        <h1>{{post.title}}</h1>
+        <p>{{post.text|linebreaksbr}}</p>
+    </div>
+<hr>
+<a class="btn btn-default" href="{% url 'add_comment_to_post' pk=post.pk %}">Add comment</a>
+
+{% for comment in post.comments.all %}
+    {% if user.is_authenticated or comment.approved_comment %}
+        <div class="comment">
+            <div class="date">
+                {{comment.created_date}}
+            </div>
+            <strong>{{comment.author}}</strong>
+            <p>{{comment.text|linebreaks}}</p>
+        </div>
+    {% endif %}
+{% empty %}
+    <p>No comment here yet :(</p>
+{% endfor %}
+{% endblock %}
