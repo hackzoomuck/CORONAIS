@@ -15,15 +15,20 @@ import pymongo
 import datetime
 import re
 
-'''
- @ sigu_url 크롤링 주소
- @ sigu_name = 도시 이름
- @ cure_cnt_tag = 완치자 태그
- @ sub_cure_cnt_tag = 완치자 계산을 위한 서브 태그
-'''
+def get_gugun_info(request):
+    cure_people()
+    return render(request, 'corona_map/gugun_info.html')
 
+'''
+ @ get_gugun_cnt  
+ @ gugun_info_dict 
+'''
+def get_gugun_cnt(gugun_info_dict):
+    def_cnt_int = None  # 확진자 수 (총 확진자)  DB : DEF_CNT
+    isol_clear_cnt_int = None  # 격리 해제 수(총 완치자) DB : ISOL_CLEAR_CNT
+    isol_ing_cnt_int = None  # 격리중 환자수(현재확진자수) DB : ISOL_ING_CNT
+    death_cnt_int = None  # 사망자 DB : DEATH_CNT
 
-def get_cnt_cure(sigu_url, sigu_name, cure_cnt_tag, sub_cure_cnt_tag):
     res_headers = {
         'User-Agent': (
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'),
@@ -31,250 +36,392 @@ def get_cnt_cure(sigu_url, sigu_name, cure_cnt_tag, sub_cure_cnt_tag):
             'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'),
         'Cookie': ('WMONID=DKSQRGw_Nxb;')
     }
-    res = requests.get(sigu_url, headers=res_headers)
+
+    gugun_url = gugun_info_dict['gugun_url']    # 크롤링 대상 url
+    gugun_name = gugun_info_dict['gugun_name']  # 구, 군 이름
+    isol_clear_cnt_tag = gugun_info_dict['isol_clear_cnt_tag']  # 누적 완치자 tag
+    sub_isol_clear_cnt_tag = gugun_info_dict['sub_isol_clear_cnt_tag']  # 누적 완치자 tag2
+    def_cnt_tag = gugun_info_dict['def_cnt_tag']    # 누적 감염자 tag
+    isol_ing_cnt_tag = gugun_info_dict['isol_ing_cnt_tag']  # 현재 확진자 tag
+
+    res = requests.get(gugun_url, headers=res_headers)
     if 200 <= res.status_code < 400:
         html = res.text
         soup = BeautifulSoup(html, 'html.parser')
-        counter_list = soup.select(cure_cnt_tag)
+
+        isol_clear_cnt_list = [None]    # 누적 완치자 크롤링 lsit
+        def_cnt_list = [None]   # 누적 확진자 크롤링 list
+        isol_ing_cnt_list = [None]  # 현재 확진자 크롤링 list
+
+        if isol_clear_cnt_tag:
+            # print('isol_clear_cnt_tag 읽기 시도')
+            isol_clear_cnt_list = soup.select(isol_clear_cnt_tag)
+        if def_cnt_tag:
+            # print('def_cnt_tag 읽기 시도')
+            def_cnt_list = soup.select(def_cnt_tag)
+        if isol_ing_cnt_tag:
+            # print('isol_clear_cnt_tag 읽기 시도')
+            isol_ing_cnt_list = soup.select(isol_ing_cnt_tag)
+
+        isol_clear_cnt = None  # 누적 완치자
+        def_cnt = None  # 누적 감염자
+        isol_ing_cnt = None  # 현재 확진자
 
         try:
-            if sigu_name == '영등포구':
-                count_int = counter_list[0]['value']
-            elif sigu_name == '양천구':
-                count_int = counter_list[0].text
-                matched = re.search(r'(\d+)', count_int)
-                count_int = matched.group(1)
-            elif sigu_name == '광진구':
-                sub_cure_cnt_tag_list = soup.select(sub_cure_cnt_tag)
-                count_int = str(int(counter_list[0].text) + int(sub_cure_cnt_tag_list[0].text))
+            if gugun_name == '영등포구':
+                if isol_clear_cnt_list[0] is not None:
+                    isol_clear_cnt = isol_clear_cnt_list[0]['value']
+                if isol_ing_cnt_list[0] is not None:
+                    isol_ing_cnt = isol_ing_cnt_list[0]['value']
+
+            elif gugun_name == '양천구':
+                count_text = isol_clear_cnt_list[0].text
+                matched = re.search(r'(\d+)명\((\d+)\명완치', count_text)
+                def_cnt = matched.group(1)
+                isol_clear_cnt = matched.group(2)
+
+            elif gugun_name == '광진구':
+                sub_isol_clear_cnt_tag_list = soup.select(sub_isol_clear_cnt_tag)
+
+                isol_clear_cnt = str(int(isol_clear_cnt_list[0].text) + int(sub_isol_clear_cnt_tag_list[0].text))
+                def_cnt = def_cnt_list[0].text
+
             else:
-                count_int = counter_list[0].text
+                if isol_clear_cnt_list[0] is not None:
+                    isol_clear_cnt = isol_clear_cnt_list[0].text
+                if def_cnt_list[0] is not None:
+                    def_cnt = def_cnt_list[0].text
+                if isol_ing_cnt_list[0] is not None:
+                    isol_ing_cnt = isol_ing_cnt_list[0].text
 
-            # 도시 이름, 완치자
+            # 정보 구하기
             regex = re.compile(r'[^0-9]')
-            count_int = regex.sub('', count_int).replace(r'[^0-9]', '')
-            print('{}: {} '.format(sigu_name, count_int))
+
+            # int 화
+            if isol_clear_cnt is not None:
+                isol_clear_cnt_int = int(regex.sub('', isol_clear_cnt).replace(r'[^0-9]', ''))
+            if def_cnt is not None:
+                def_cnt_int = int(regex.sub('', def_cnt).replace(r'[^0-9]', ''))
+            if isol_ing_cnt is not None:
+                isol_ing_cnt_int = int(regex.sub('', isol_ing_cnt).replace(r'[^0-9]', ''))
+
         except Exception as ex:
-            print(ex)
-            print(sigu_name)
+            print(gugun_name,'EXCEPTION ERROR : ',ex)
+
+    # 못 받아온 값 확인
+    if isol_clear_cnt_int is None:
+        isol_ing_cnt_int = 99999999999 # 총 완치자는 모두 받아옴을 확인. 또는 사망자가 있을경우 알 수 없다.
+
+    if def_cnt_int is None:
+        if isol_clear_cnt_int is not None and isol_ing_cnt_int is not None:
+            def_cnt_int = isol_clear_cnt_int + isol_ing_cnt_int
+        else:
+            def_cnt_int = 99999999999
+
+    if isol_ing_cnt_int is None:
+        if def_cnt_int is not None and isol_clear_cnt_int  is not None:
+            isol_ing_cnt_int = def_cnt_int - isol_clear_cnt_int
+        else:
+            isol_ing_cnt_int = 99999999999
+
+    death_cnt_int = def_cnt_int-isol_ing_cnt_int-isol_clear_cnt_int
+
+    print('도시명: {}'.format(gugun_name))
+    print('누적 확진자: {}'.format(def_cnt_int))
+    print('현재 확진자: {}'.format(isol_ing_cnt_int))
+    print('누적 완치자: {}'.format(isol_clear_cnt_int))
+    print('사망자: {}'.format(death_cnt_int))
 
 
-def cure_people(request):
+def cure_people():
     # http://ncov.mohw.go.kr/ 코로나 바이러스 감염증 중앙대책본부 통계 자료
 
     cities_data_list = []
 
-    sigu_url = 'https://www.seoul.go.kr/coronaV/coronaStatus.do'
-    sigu_name = '서울'
-
+    city_url = 'https://www.seoul.go.kr/coronaV/coronaStatus.do'
+    city_name = '서울'
+    # 0 종로구
     city_data_dict = {
-        'city_url': 'https://www.jongno.go.kr/portalMain.do;jsessionid=WRbjo7mxihEc2FtUXnZ8KUhCfSD3fYAhm2iyQ17E3HY1FDdtV6TOPaw70mYWKyKW.was_servlet_engine1',
-        'city_name': '종로구',
-        'cure_cnt_tag': '#corona19_info > div > div.popup-body > div.coronal-table > table > tbody > tr > td:nth-child(2)',
-        'sub_cure_cnt_tag': ''
+        'gugun_url': 'https://www.jongno.go.kr/portalMain.do;jsessionid=WRbjo7mxihEc2FtUXnZ8KUhCfSD3fYAhm2iyQ17E3HY1FDdtV6TOPaw70mYWKyKW.was_servlet_engine1',
+        'gugun_name': '종로구',
+        'isol_clear_cnt_tag': '#corona19_info > div > div.popup-body > div.coronal-table > table > tbody > tr > td:nth-child(2)', # 누적 완치자
+        'sub_isol_clear_cnt_tag': '', # 누적 완치자 2 서브로 필요한 경우
+        'def_cnt_tag':'#corona19_info > div > div.popup-body > div.coronal-table > table > tbody > tr > td:nth-child(1)', # 누적 확진자
+        'isol_ing_cnt_tag':'#corona19_info > div > div.popup-body > div.coronal-table > table > tbody > tr > td:nth-child(4)' # 현재 확진자
+
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 1 중구
+    city_data_dict = {
+        'gugun_url': 'http://www.junggu.seoul.kr/index.jsp#',
+        'gugun_name': '중구',
+        'isol_clear_cnt_tag': '#wrap > div.popup_container > div.virus_popup01 > div.popup_body > div > div.col_right.clearfix > div.r_inner_left > div > div > table > tbody > tr > td:nth-child(2)',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag':'#wrap > div.popup_container > div.virus_popup01 > div.popup_body > div > div.col_right.clearfix > div.r_inner_left > div > div > table > thead > tr:nth-child(1) > th:nth-child(1)',
+        'isol_ing_cnt_tag':'#wrap > div.popup_container > div.virus_popup01 > div.popup_body > div > div.col_right.clearfix > div.r_inner_left > div > div > table > tbody > tr > td:nth-child(1)'
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 2 용산구
+    city_data_dict = {
+        'gugun_url': 'http://www.yongsan.go.kr/index.htm',
+        'gugun_name': '용산구',
+        'isol_clear_cnt_tag': '#wrap > div.layer-popup > div > div.popup-contents.virus > div > div:nth-child(1) > div > table > tbody > tr > td:nth-child(2)',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': '#wrap > div.layer-popup > div > div.popup-contents.virus > div > div:nth-child(1) > div > table > tbody > tr > td:nth-child(1)'
     }
     cities_data_list.append(city_data_dict)
 
+    # 3 동대문구
     city_data_dict = {
-        'city_url': 'http://www.junggu.seoul.kr/index.jsp#',
-        'city_name': '중구',
-        'cure_cnt_tag': '#wrap > div.popup_container > div.virus_popup01 > div.popup_body > div > div.col_right.clearfix > div.r_inner_left > div > div > table > tbody > tr > td:nth-child(2)',
-        'sub_cure_cnt_tag': ''
+        'gugun_url': 'http://www.ddm.go.kr/',
+        'gugun_name': '동대문구',
+        'isol_clear_cnt_tag': '#contents > div.inner > section:nth-child(1) > div > table > tbody > tr > td:nth-child(3) > strong',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '#contents > div.inner > section:nth-child(1) > div > table > tbody > tr > td:nth-child(1)',
+        'isol_ing_cnt_tag': '#contents > div.inner > section:nth-child(1) > div > table > tbody > tr > td:nth-child(2)'
     }
     cities_data_list.append(city_data_dict)
 
+    # 4 중랑구
     city_data_dict = {
-        'city_url': 'http://www.yongsan.go.kr/index.htm',
-        'city_name': '용산구',
-        'cure_cnt_tag': '#wrap > div.layer-popup > div > div.popup-contents.virus > div > div:nth-child(1) > div > table > tbody > tr > td:nth-child(2)',
-        'sub_cure_cnt_tag': ''
+        'gugun_url': 'http://c19.jungnang.go.kr/',
+        'gugun_name': '중랑구',
+        'isol_clear_cnt_tag': '#jn_intro_wrap > div > div.intro_tbl_box > dl.intro_tbl.jn_intro_tbl > dd:nth-child(3) > span',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '#jn_intro_wrap > div.intro_containter > div.intro_tbl_box > dl.intro_tbl.jn_intro_tbl > dd:nth-child(2) > span',
+        'isol_ing_cnt_tag': ''
     }
     cities_data_list.append(city_data_dict)
 
+    # 5 성동구
     city_data_dict = {
-        'city_url': 'http://www.ddm.go.kr/',
-        'city_name': '동대문구',
-        'cure_cnt_tag': '#contents > div.inner > section:nth-child(1) > div > table > tbody > tr > td:nth-child(3) > strong',
-        'sub_cure_cnt_tag': ''
+        'gugun_url': 'http://www.sd.go.kr/sd/intro.do',
+        'gugun_name': '성동구',
+        'isol_clear_cnt_tag': '#content > div.top_box > div > div.top_area1 > ul > li.alone > span:nth-child(3) > em',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '#content > div.top_box > div > div.top_area1 > ul > li.alone > span.stat_title',
+        'isol_ing_cnt_tag': '#content > div.top_box > div > div.top_area1 > ul > li.alone > span.stat_txt.first_txt > em'
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 6 성북구
+    city_data_dict = {
+        'gugun_url': 'http://www.sb.go.kr/',
+        'gugun_name': '성북구',
+        'isol_clear_cnt_tag': '#main_popup > div.wrap-div1 > div.box2-n.clearfix > div.con2.style2 > div > div.box1.clearfix > div.box-c.c1 > p > span.num',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '#main_popup > div.wrap-div1 > div.box2-n.clearfix > div.con2.style2 > div > div.box1.clearfix > div.box-c.c1 > p > span.num',
+        'isol_ing_cnt_tag': '#main_popup > div.wrap-div1 > div.box2-n.clearfix > div.con2.style2 > div > div.box1.clearfix > div.box-c.c2 > p > span.num'
     }
     cities_data_list.append(city_data_dict)
 
+    # 7 강북구
     city_data_dict = {
-        'city_url': 'http://c19.jungnang.go.kr/',
-        'city_name': '중랑구',
-        'cure_cnt_tag': '#jn_intro_wrap > div > div.intro_tbl_box > dl.intro_tbl.jn_intro_tbl > dd:nth-child(3) > span',
-        'sub_cure_cnt_tag': ''
+        'gugun_url': 'http://www.gangbuk.go.kr/intro_gb.jsp',
+        'gugun_name': '강북구',
+        'isol_clear_cnt_tag': '#corona_container > main > div.section.state > div.sectionbox > div > div > div.rowbox.rowbox2.clearfix > div.conbox.clearfix > ul > li.item.item04 > div > p',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '#corona_container > main > div.section.state > div.sectionbox > div > div > div.rowbox.rowbox2.clearfix > div.conbox.clearfix > ul > li.item.item01 > div > p',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 8 도봉구
+    city_data_dict = {
+        'gugun_url': 'http://www.dobong.go.kr/',
+        'gugun_name': '도봉구',
+        'isol_clear_cnt_tag': '#base > div.new_curtain > div > ul > li.box01 > div > div > div.corona_box.left_box > div > dl:nth-child(3) > dd',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '#base > div.new_curtain > div > ul > li.box01 > div > div > div.corona_box.left_box > div > dl:nth-child(1) > dd',
+        'isol_ing_cnt_tag': '#base > div.new_curtain > div > ul > li.box01 > div > div > div.corona_box.left_box > div > dl:nth-child(2) > dd'
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 9 노원구
+    city_data_dict = {
+        'gugun_url': 'https://www.nowon.kr/corona19/index.do',
+        'gugun_name': '노원구',
+        'isol_clear_cnt_tag': 'body > div.corona-info > div > div > div > div > table > tbody > tr > td:nth-child(2)',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 10 은평구
+    city_data_dict = {
+        'gugun_url': 'https://www.ep.go.kr/CmsWeb/viewPage.req?idx=PG0000004918',
+        'gugun_name': '은평구',
+        'isol_clear_cnt_tag': '#content > div > div.sub_content > div > div > div:nth-child(3) > table > tbody > tr > td:nth-child(2)',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 11 은평구
+    city_data_dict = {
+        'gugun_url': 'http://www.sdm.go.kr/index.do',
+        'gugun_name': '서대문구',
+        'isol_clear_cnt_tag': '#relativeDiv > div.corona-popup.is-visible > div > div.corona-popup-number > ul > li:nth-child(2)',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 12 마포구
+    city_data_dict = {
+        'gugun_url': 'http://www.mapo.go.kr/html/corona/intro.htm',
+        'gugun_name': '마포구',
+        'isol_clear_cnt_tag': 'body > div > div > div.intro-status > div.is-cont.clearfix > div.isc-left > table > tbody > tr:nth-child(2) > td:nth-child(2)',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 13 양천구
+    city_data_dict = {
+        'gugun_url': 'http://www.yangcheon.go.kr/site/yangcheon/coronaStatusList.do',
+        'gugun_name': '양천구',
+        'isol_clear_cnt_tag': '#content > div:nth-child(3) > div.redtable > table > tbody > tr:nth-child(2) > td:nth-child(2) > b',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 14 강서구
+    city_data_dict = {
+        'gugun_url': 'http://www.gangseo.seoul.kr/new_portal/living/safe/page06_07.jsp',
+        'gugun_name': '강서구',
+        'isol_clear_cnt_tag': '.blue3',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 15 구로구
+    city_data_dict = {
+        'gugun_url': 'https://www.guro.go.kr/corona2.jsp',
+        'gugun_name': '구로구',
+        'isol_clear_cnt_tag': '#content1 > div > div.outbreak_pink > div > span:nth-child(5)',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 16 금천구
+    city_data_dict = {
+        'gugun_url': 'https://www.geumcheon.go.kr/portal/intro.do',
+        'gugun_name': '금천구',
+        'isol_clear_cnt_tag': '#wrapper > div > div.bottom_box > div.text_area > div.table_text_left.clearfix > div > ul > li.pink_line.clearfix > div.box_col.box_w70 > span.text_table.clearfix > table > tbody > tr > td:nth-child(3)',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 17 동작구
+    city_data_dict = {
+        'gugun_url': 'http://www.dongjak.go.kr/',
+        'gugun_name': '동작구',
+        'isol_clear_cnt_tag': '.intr_tb tr:nth-child(3) td',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 18 영등포구
+    city_data_dict = {
+        'gugun_url': 'https://www.ydp.go.kr/site/corona/index.jsp',
+        'gugun_name': '영등포구',
+        'isol_clear_cnt_tag': '#iptDiss_cnt4',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': '#iptDiss_cnt1'
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 19 서초구
+    city_data_dict = {
+        'gugun_url': 'https://www.seocho.go.kr/html/notice/main.jsp',
+        'gugun_name': '서초구',
+        'isol_clear_cnt_tag': '#wrap > div.covidNew > div > div.countList > ul > li.item3 > span.count > b',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 20 송파구
+    city_data_dict = {
+        'gugun_url': 'http://www.songpa.go.kr/index.jsp',
+        'gugun_name': '송파구',
+        'isol_clear_cnt_tag': '#wraper > div.new-pop > div.np-thalf > div.npt-cont.clearfix > div.nc-left > div.status-table > table > tbody > tr > td:nth-child(3)',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 21 강동구
+    city_data_dict = {
+        'gugun_url': 'https://www.gangdong.go.kr/',
+        'gugun_name': '강동구',
+        'isol_clear_cnt_tag': '#main-wrap > div.main-center > div.grey-box > ul > li.green > div.cont-right > p > strong',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 22 관악구
+    city_data_dict = {
+        'gugun_url': 'http://www.gwanak.go.kr/site/gwanak/main.do',
+        'gugun_name': '관악구',
+        'isol_clear_cnt_tag': '.corona_con td:nth-child(3)',
+        'sub_isol_clear_cnt_tag': '',
+        'def_cnt_tag': '',
+        'isol_ing_cnt_tag': ''
+    }
+    cities_data_list.append(city_data_dict)
+    
+    # 23 광진구
+    city_data_dict = {
+        'gugun_url': 'https://www.gwangjin.go.kr/portal/main/main.do#n',
+        'gugun_name': '광진구',
+        'isol_clear_cnt_tag': '.table-sty2 td:nth-child(3)',
+        'sub_isol_clear_cnt_tag': '.table-sty2 td:nth-child(4)',
+        'def_cnt_tag': '.table-sty2 th:nth-child(1)',
+        'isol_ing_cnt_tag': ''
     }
     cities_data_list.append(city_data_dict)
 
-    city_data_dict = {
-        'city_url': 'http://www.sd.go.kr/sd/intro.do',
-        'city_name': '성동구',
-        'cure_cnt_tag': '#content > div.top_box > div > div.top_area1 > ul > li.alone > span:nth-child(3) > em',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
+    for city_data_dict in cities_data_list:
+        get_gugun_cnt(city_data_dict)
 
-    city_data_dict = {
-        'city_url': 'http://www.sb.go.kr/',
-        'city_name': '성북구',
-        'cure_cnt_tag': '#main_popup > div.wrap-div1 > div.box2-n.clearfix > div.con2.style2 > div > div.box1.clearfix > div.box-c.c1 > p > span.num',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'http://www.gangbuk.go.kr/intro_gb.jsp',
-        'city_name': '강북구',
-        'cure_cnt_tag': '.itembox .text',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'http://www.dobong.go.kr/',
-        'city_name': '도봉구',
-        'cure_cnt_tag': '#base > div.corona_pop > div > div.pop_section02 > div.corona_box_wrap > div.corona_box.left_box > div > dl:nth-child(3) > dd',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'https://www.nowon.kr/corona19/index.do',
-        'city_name': '노원구',
-        'cure_cnt_tag': 'body > div.corona-info > div > div > div > div > table > tbody > tr > td:nth-child(2)',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'https://www.ep.go.kr/CmsWeb/viewPage.req?idx=PG0000004918',
-        'city_name': '은평구',
-        'cure_cnt_tag': '#content > div > div.sub_content > div > div > div:nth-child(3) > table > tbody > tr > td:nth-child(2)',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'http://www.sdm.go.kr/index.do',
-        'city_name': '서대문구',
-        'cure_cnt_tag': '#relativeDiv > div.corona-popup.is-visible > div > div.corona-popup-number > ul > li:nth-child(2)',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'http://www.mapo.go.kr/html/corona/intro.htm',
-        'city_name': '마포구',
-        'cure_cnt_tag': 'body > div > div > div.intro-status > div.is-cont.clearfix > div.isc-left > table > tbody > tr:nth-child(2) > td:nth-child(2)',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'http://www.yangcheon.go.kr/site/yangcheon/coronaStatusList.do',
-        'city_name': '양천구',
-        'cure_cnt_tag': '#content > div:nth-child(3) > div.redtable > table > tbody > tr:nth-child(2) > td:nth-child(2) > b',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'http://www.gangseo.seoul.kr/new_portal/living/safe/page06_07.jsp',
-        'city_name': '강서구',
-        'cure_cnt_tag': '.blue3',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'https://www.guro.go.kr/corona2.jsp',
-        'city_name': '구로구',
-        'cure_cnt_tag': '#content1 > div > div.outbreak_pink > div > span:nth-child(5)',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'https://www.geumcheon.go.kr/portal/intro.do',
-        'city_name': '금천구',
-        'cure_cnt_tag': '#wrapper > div > div.bottom_box > div.text_area > div.table_text_left.clearfix > div > ul > li.pink_line.clearfix > div.box_col.box_w70 > span.text_table.clearfix > table > tbody > tr > td:nth-child(3)',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'http://www.dongjak.go.kr/',
-        'city_name': '동작구',
-        'cure_cnt_tag': '.intr_tb tr:nth-child(3) td',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'https://www.ydp.go.kr/site/corona/index.jsp',
-        'city_name': '영등포구',
-        'cure_cnt_tag': '#iptDiss_cnt4',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'https://www.seocho.go.kr/html/notice/main.jsp',
-        'city_name': '서초구',
-        'cure_cnt_tag': '#wrap > div.covidNew > div > div.countList > ul > li.item3 > span.count > b',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'http://www.songpa.go.kr/index.jsp',
-        'city_name': '송파구',
-        'cure_cnt_tag': '#wraper > div.new-pop > div.np-thalf > div.npt-cont.clearfix > div.nc-left > div.status-table > table > tbody > tr > td:nth-child(3)',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'https://www.gangdong.go.kr/',
-        'city_name': '강동구',
-        'cure_cnt_tag': '#main-wrap > div.main-center > div.grey-box > ul > li.green > div.cont-right > p > strong',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    city_data_dict = {
-        'city_url': 'http://www.gwanak.go.kr/site/gwanak/main.do',
-        'city_name': '관악구',
-        'cure_cnt_tag': '.corona_con td:nth-child(3)',
-        'sub_cure_cnt_tag': ''
-    }
-    cities_data_list.append(city_data_dict)
-
-    #### 광진구 완치자 = 해외입국자 완치 + 국내감염 완치
-    city_data_dict = {
-        'city_url': 'https://www.gwangjin.go.kr/portal/main/main.do#n',
-        'city_name': '광진구',
-        'cure_cnt_tag': '.table-sty2 td:nth-child(3)',
-        'sub_cure_cnt_tag': '.table-sty2 td:nth-child(4)'
-    }
-    cities_data_list.append(city_data_dict)
-
-    for city_data in cities_data_list:
-        city_url = city_data['city_url']
-        city_name = city_data['city_name']
-        cure_cnt_tag = city_data['cure_cnt_tag']  # 완치자 누적
-        sub_cure_cnt_tag = city_data['sub_cure_cnt_tag']  # 실험한거야
-        get_cnt_cure(city_url, city_name, cure_cnt_tag, sub_cure_cnt_tag)
+    # get_gugun_cnt(cities_data_list[8])
 
     ######################### 강남은 강남 JSON 따로 있으니 처리 빼야함 ####################
-    city_url = 'http://www.gangnam.go.kr/etc/json/covid19.json'
-    city_name = '강남구'
-    res = requests.get(city_url)
-    count_int = res.json()['status']['counter8']
-    print('{}: {} '.format(city_name, count_int))
+    gugun_url = 'http://www.gangnam.go.kr/etc/json/covid19.json'
+    gugun_name = '강남구'
+    res = requests.get(gugun_url)
+    def_cnt_int = res.json()['status']['counter8']
 
-    return render(request, 'corona_map/cure_people.html')
+    print('도시명: {}'.format(gugun_name))
+    print('누적 확진자: {}'.format(def_cnt_int))
+    print('현재 확진자: {}'.format(99999999999))
+    print('누적 완치자: {}'.format(99999999999))
+    print('사망자: {}'.format(99999999999))
+
 
 # 템플릿 적용
 def cois_main(request):
