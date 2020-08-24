@@ -51,11 +51,11 @@ def infection_city():
             item_dict['stdday'] = item.find('stdday').string
             # 등록일시분초 2020-08-14 10:36:59.393
             item_dict['createdt'] = item.find('createdt').string
+
             date_string = item.find('createdt').string[:10].split('-')
             dateis = ''.join(date_string)
-
-
             item_dict['id'] = int(dateis)
+
             comong.Infection_City().add_user_on_collection(item_dict)
 
 
