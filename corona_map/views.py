@@ -5,15 +5,16 @@ import pandas as pd
 import folium
 import json
 import requests
+import pymongo
+import datetime
+import re
+
 import corona_map.MongoDbManager as comong
 from corona_map.Api.Infection_city import infection_city
 from corona_map.Api.Infection_by_age_gender import infection_by_age_gender
 from corona_map.Api.Infection_status import infection_status
 
-import pymongo
-# 현재날짜를 사용하기 위한 모듈
-import datetime
-import re
+
 
 def get_gugun_info(request):
     cure_people()
@@ -28,6 +29,14 @@ def get_gugun_cnt(gugun_info_dict):
     isol_clear_cnt_int = None  # 격리 해제 수(총 완치자) DB : ISOL_CLEAR_CNT
     isol_ing_cnt_int = None  # 격리중 환자수(현재확진자수) DB : ISOL_ING_CNT
     death_cnt_int = None  # 사망자 DB : DEATH_CNT
+
+    isol_clear_cnt_list = None  # 누적 완치자 크롤링 lsit
+    def_cnt_list = None  # 누적 확진자 크롤링 list
+    isol_ing_cnt_list = None  # 현재 확진자 크롤링 list
+
+    isol_clear_cnt = None  # 누적 완치자
+    def_cnt = None  # 누적 감염자
+    isol_ing_cnt = None  # 현재 확진자
 
     res_headers = {
         'User-Agent': (
@@ -49,29 +58,24 @@ def get_gugun_cnt(gugun_info_dict):
         html = res.text
         soup = BeautifulSoup(html, 'html.parser')
 
-        isol_clear_cnt_list = [None]    # 누적 완치자 크롤링 lsit
-        def_cnt_list = [None]   # 누적 확진자 크롤링 list
-        isol_ing_cnt_list = [None]  # 현재 확진자 크롤링 list
-
         if isol_clear_cnt_tag:
             # print('isol_clear_cnt_tag 읽기 시도')
             isol_clear_cnt_list = soup.select(isol_clear_cnt_tag)
+            # print(isol_clear_cnt_list)
         if def_cnt_tag:
             # print('def_cnt_tag 읽기 시도')
             def_cnt_list = soup.select(def_cnt_tag)
+            # print(def_cnt_list)
         if isol_ing_cnt_tag:
-            # print('isol_clear_cnt_tag 읽기 시도')
+            # print('isol_ing_cnt_tag 읽기 시도')
             isol_ing_cnt_list = soup.select(isol_ing_cnt_tag)
-
-        isol_clear_cnt = None  # 누적 완치자
-        def_cnt = None  # 누적 감염자
-        isol_ing_cnt = None  # 현재 확진자
+            # print(isol_ing_cnt_list)
 
         try:
             if gugun_name == '영등포구':
-                if isol_clear_cnt_list[0] is not None:
+                if isol_clear_cnt_list is not None:
                     isol_clear_cnt = isol_clear_cnt_list[0]['value']
-                if isol_ing_cnt_list[0] is not None:
+                if isol_ing_cnt_list is not None:
                     isol_ing_cnt = isol_ing_cnt_list[0]['value']
 
             elif gugun_name == '양천구':
@@ -80,24 +84,40 @@ def get_gugun_cnt(gugun_info_dict):
                 def_cnt = matched.group(1)
                 isol_clear_cnt = matched.group(2)
 
+            elif gugun_name == '강서구':
+                isol_ing_cnt_list = isol_clear_cnt_list[0].select('td:nth-last-child(3)')
+                death_cnt_list = isol_clear_cnt_list[0].select('td:nth-last-child(1)')
+                isol_clear_cnt_list = isol_clear_cnt_list[0].select('td:nth-last-child(2)')
+
+                isol_ing_cnt = str(isol_ing_cnt_list[0].text)
+                isol_clear_cnt = str(isol_clear_cnt_list[0].text)
+                death_cnt_int = int(death_cnt_list[0].text)
+
             elif gugun_name == '광진구':
                 sub_isol_clear_cnt_tag_list = soup.select(sub_isol_clear_cnt_tag)
 
                 isol_clear_cnt = str(int(isol_clear_cnt_list[0].text) + int(sub_isol_clear_cnt_tag_list[0].text))
                 def_cnt = def_cnt_list[0].text
 
+            elif gugun_name == '중랑구':
+                count_text = isol_clear_cnt_list[0].text
+                matched = re.search(r'(\d+)(\s)\((\d+)\)', count_text)
+                def_cnt = matched.group(1)
+                isol_clear_cnt = matched.group(3)
+
             else:
-                if isol_clear_cnt_list[0] is not None:
+                if isol_clear_cnt_list is not None:
                     isol_clear_cnt = isol_clear_cnt_list[0].text
-                if def_cnt_list[0] is not None:
+                if def_cnt_list is not None:
                     def_cnt = def_cnt_list[0].text
-                if isol_ing_cnt_list[0] is not None:
+                if isol_ing_cnt_list is not None:
                     isol_ing_cnt = isol_ing_cnt_list[0].text
 
             # 정보 구하기
             regex = re.compile(r'[^0-9]')
 
             # int 화
+            # print('정규표현식 작동')
             if isol_clear_cnt is not None:
                 isol_clear_cnt_int = int(regex.sub('', isol_clear_cnt).replace(r'[^0-9]', ''))
             if def_cnt is not None:
@@ -110,21 +130,39 @@ def get_gugun_cnt(gugun_info_dict):
 
     # 못 받아온 값 확인
     if isol_clear_cnt_int is None:
-        isol_ing_cnt_int = 99999999999 # 총 완치자는 모두 받아옴을 확인. 또는 사망자가 있을경우 알 수 없다.
+        if death_cnt_int is not None and def_cnt_int is not None and isol_ing_cnt_int is not None:
+            isol_clear_cnt_int = def_cnt_int - death_cnt_int - isol_ing_cnt_int
+        else:
+            if isol_ing_cnt_int is not None and def_cnt_int is not None:
+                isol_clear_cnt_int = def_cnt_int - isol_ing_cnt_int
+            else:
+                isol_ing_cnt_int = -1
 
     if def_cnt_int is None:
-        if isol_clear_cnt_int is not None and isol_ing_cnt_int is not None:
-            def_cnt_int = isol_clear_cnt_int + isol_ing_cnt_int
+        if isol_clear_cnt_int is not None and isol_ing_cnt_int is not None and death_cnt_int is not None:
+            def_cnt_int = isol_clear_cnt_int + isol_ing_cnt_int + death_cnt_int
         else:
-            def_cnt_int = 99999999999
+            if isol_clear_cnt_int is not None and isol_ing_cnt_int is not None:
+                def_cnt_int = isol_clear_cnt_int + isol_ing_cnt_int
+            else:
+                def_cnt_int = -1
 
     if isol_ing_cnt_int is None:
-        if def_cnt_int is not None and isol_clear_cnt_int  is not None:
-            isol_ing_cnt_int = def_cnt_int - isol_clear_cnt_int
+        if def_cnt_int is not None and isol_clear_cnt_int  is not None and death_cnt_int is not None:
+            isol_ing_cnt_int = def_cnt_int - isol_clear_cnt_int - death_cnt_int
         else:
-            isol_ing_cnt_int = 99999999999
+            if def_cnt_int is not None and isol_clear_cnt_int  is not None:
+                isol_ing_cnt_int = def_cnt_int - isol_clear_cnt_int
+            else :
+                isol_ing_cnt_int = -1
 
-    death_cnt_int = def_cnt_int-isol_ing_cnt_int-isol_clear_cnt_int
+    if death_cnt_int is None:
+        if def_cnt_int is not None and isol_clear_cnt_int  is not None:
+            death_cnt_int = def_cnt_int - isol_ing_cnt_int - isol_clear_cnt_int
+        else:
+            death_cnt_int = -1
+
+
 
     print('도시명: {}'.format(gugun_name))
     print('누적 확진자: {}'.format(def_cnt_int))
@@ -189,9 +227,9 @@ def cure_people():
     city_data_dict = {
         'gugun_url': 'http://c19.jungnang.go.kr/',
         'gugun_name': '중랑구',
-        'isol_clear_cnt_tag': '#jn_intro_wrap > div > div.intro_tbl_box > dl.intro_tbl.jn_intro_tbl > dd:nth-child(3) > span',
+        'isol_clear_cnt_tag': '#jn_bulletin_wrap > div.jb_md_box > div > ul > li:nth-child(1) > b',
         'sub_isol_clear_cnt_tag': '',
-        'def_cnt_tag': '#jn_intro_wrap > div.intro_containter > div.intro_tbl_box > dl.intro_tbl.jn_intro_tbl > dd:nth-child(2) > span',
+        'def_cnt_tag': '',
         'isol_ing_cnt_tag': ''
     }
     cities_data_list.append(city_data_dict)
@@ -246,8 +284,8 @@ def cure_people():
         'gugun_name': '노원구',
         'isol_clear_cnt_tag': 'body > div.corona-info > div > div > div > div > table > tbody > tr > td:nth-child(2)',
         'sub_isol_clear_cnt_tag': '',
-        'def_cnt_tag': '',
-        'isol_ing_cnt_tag': ''
+        'def_cnt_tag': 'body > div.corona-info > div > div > div > div > table > tbody > tr > td.text-primary.text-medium > span',
+        'isol_ing_cnt_tag': 'body > div.corona-info > div > div > div > div > table > tbody > tr > td:nth-child(3)'
     }
     cities_data_list.append(city_data_dict)
     
@@ -257,19 +295,20 @@ def cure_people():
         'gugun_name': '은평구',
         'isol_clear_cnt_tag': '#content > div > div.sub_content > div > div > div:nth-child(3) > table > tbody > tr > td:nth-child(2)',
         'sub_isol_clear_cnt_tag': '',
-        'def_cnt_tag': '',
+        'def_cnt_tag': '#content > div > div.sub_content > div > div > div:nth-child(3) > table > tbody > tr > td.botn',
         'isol_ing_cnt_tag': ''
     }
     cities_data_list.append(city_data_dict)
     
-    # 11 은평구
+    # 11 서대문구
+    # 서대문구 사망자가 치료중에 들어있음
     city_data_dict = {
         'gugun_url': 'http://www.sdm.go.kr/index.do',
         'gugun_name': '서대문구',
-        'isol_clear_cnt_tag': '#relativeDiv > div.corona-popup.is-visible > div > div.corona-popup-number > ul > li:nth-child(2)',
+        'isol_clear_cnt_tag': '#relativeDiv > div.corona-popup.is-visible > div > div.corona-popup-number > ul > li:nth-child(2) > span',
         'sub_isol_clear_cnt_tag': '',
-        'def_cnt_tag': '',
-        'isol_ing_cnt_tag': ''
+        'def_cnt_tag': '#relativeDiv > div.corona-popup.is-visible > div > div.corona-popup-number > ul > li:nth-child(1) > span',
+        'isol_ing_cnt_tag': '#relativeDiv > div.corona-popup.is-visible > div > div.corona-popup-number > ul > li:nth-child(3) > span'
     }
     cities_data_list.append(city_data_dict)
     
@@ -279,8 +318,8 @@ def cure_people():
         'gugun_name': '마포구',
         'isol_clear_cnt_tag': 'body > div > div > div.intro-status > div.is-cont.clearfix > div.isc-left > table > tbody > tr:nth-child(2) > td:nth-child(2)',
         'sub_isol_clear_cnt_tag': '',
-        'def_cnt_tag': '',
-        'isol_ing_cnt_tag': ''
+        'def_cnt_tag': 'body > div > div > div.intro-status > div.is-cont.clearfix > div.isc-left > table > thead > tr > th:nth-child(1)',
+        'isol_ing_cnt_tag': 'body > div > div > div.intro-status > div.is-cont.clearfix > div.isc-left > table > tbody > tr:nth-child(2) > td:nth-child(1)'
     }
     cities_data_list.append(city_data_dict)
     
@@ -299,11 +338,12 @@ def cure_people():
     city_data_dict = {
         'gugun_url': 'http://www.gangseo.seoul.kr/new_portal/living/safe/page06_07.jsp',
         'gugun_name': '강서구',
-        'isol_clear_cnt_tag': '.blue3',
+        'isol_clear_cnt_tag': '.newcon-wrap > .newcon-list > .con2 > table',
         'sub_isol_clear_cnt_tag': '',
         'def_cnt_tag': '',
         'isol_ing_cnt_tag': ''
     }
+
     cities_data_list.append(city_data_dict)
     
     # 15 구로구
@@ -312,8 +352,8 @@ def cure_people():
         'gugun_name': '구로구',
         'isol_clear_cnt_tag': '#content1 > div > div.outbreak_pink > div > span:nth-child(5)',
         'sub_isol_clear_cnt_tag': '',
-        'def_cnt_tag': '',
-        'isol_ing_cnt_tag': ''
+        'def_cnt_tag': '#counter1',
+        'isol_ing_cnt_tag': '#content1 > div > div.outbreak_pink > div > span:nth-child(3)'
     }
     cities_data_list.append(city_data_dict)
     
@@ -323,8 +363,8 @@ def cure_people():
         'gugun_name': '금천구',
         'isol_clear_cnt_tag': '#wrapper > div > div.bottom_box > div.text_area > div.table_text_left.clearfix > div > ul > li.pink_line.clearfix > div.box_col.box_w70 > span.text_table.clearfix > table > tbody > tr > td:nth-child(3)',
         'sub_isol_clear_cnt_tag': '',
-        'def_cnt_tag': '',
-        'isol_ing_cnt_tag': ''
+        'def_cnt_tag': '#wrapper > div > div.bottom_box > div.text_area > div.table_text_left.clearfix > div > ul > li.pink_line.clearfix > div.box_col.box_w70 > span.text_table.clearfix > table > tbody > tr > td:nth-child(1)',
+        'isol_ing_cnt_tag': '#wrapper > div > div.bottom_box > div.text_area > div.table_text_left.clearfix > div > ul > li.pink_line.clearfix > div.box_col.box_w70 > span.text_table.clearfix > table > tbody > tr > td:nth-child(2)'
     }
     cities_data_list.append(city_data_dict)
     
@@ -335,7 +375,7 @@ def cure_people():
         'isol_clear_cnt_tag': '.intr_tb tr:nth-child(3) td',
         'sub_isol_clear_cnt_tag': '',
         'def_cnt_tag': '',
-        'isol_ing_cnt_tag': ''
+        'isol_ing_cnt_tag': '.intr_tb tr:nth-child(1) td'
     }
     cities_data_list.append(city_data_dict)
     
@@ -357,7 +397,7 @@ def cure_people():
         'isol_clear_cnt_tag': '#wrap > div.covidNew > div > div.countList > ul > li.item3 > span.count > b',
         'sub_isol_clear_cnt_tag': '',
         'def_cnt_tag': '',
-        'isol_ing_cnt_tag': ''
+        'isol_ing_cnt_tag': '#wrap > div.covidNew > div > div.countList > ul > li.item1 > span.count > b'
     }
     cities_data_list.append(city_data_dict)
     
@@ -367,8 +407,8 @@ def cure_people():
         'gugun_name': '송파구',
         'isol_clear_cnt_tag': '#wraper > div.new-pop > div.np-thalf > div.npt-cont.clearfix > div.nc-left > div.status-table > table > tbody > tr > td:nth-child(3)',
         'sub_isol_clear_cnt_tag': '',
-        'def_cnt_tag': '',
-        'isol_ing_cnt_tag': ''
+        'def_cnt_tag': '#wraper > div.new-pop > div.np-thalf > div.npt-cont.clearfix > div.nc-left > div.status-table > table > tbody > tr > td:nth-child(1)',
+        'isol_ing_cnt_tag': '#wraper > div.new-pop > div.np-thalf > div.npt-cont.clearfix > div.nc-left > div.status-table > table > tbody > tr > td.red-b'
     }
     cities_data_list.append(city_data_dict)
     
@@ -378,7 +418,7 @@ def cure_people():
         'gugun_name': '강동구',
         'isol_clear_cnt_tag': '#main-wrap > div.main-center > div.grey-box > ul > li.green > div.cont-right > p > strong',
         'sub_isol_clear_cnt_tag': '',
-        'def_cnt_tag': '',
+        'def_cnt_tag': '#main-wrap > div.main-center > div.grey-box > ul > li.red > div.cont-right > p > strong',
         'isol_ing_cnt_tag': ''
     }
     cities_data_list.append(city_data_dict)
@@ -387,10 +427,10 @@ def cure_people():
     city_data_dict = {
         'gugun_url': 'http://www.gwanak.go.kr/site/gwanak/main.do',
         'gugun_name': '관악구',
-        'isol_clear_cnt_tag': '.corona_con td:nth-child(3)',
+        'isol_clear_cnt_tag': '.f td:nth-last-child(1)',
         'sub_isol_clear_cnt_tag': '',
-        'def_cnt_tag': '',
-        'isol_ing_cnt_tag': ''
+        'def_cnt_tag': '.f td:nth-last-child(3)',
+        'isol_ing_cnt_tag': '.f td:nth-last-child(2)'
     }
     cities_data_list.append(city_data_dict)
     
@@ -405,10 +445,9 @@ def cure_people():
     }
     cities_data_list.append(city_data_dict)
 
+    # """
     for city_data_dict in cities_data_list:
         get_gugun_cnt(city_data_dict)
-
-    # get_gugun_cnt(cities_data_list[8])
 
     ######################### 강남은 강남 JSON 따로 있으니 처리 빼야함 ####################
     gugun_url = 'http://www.gangnam.go.kr/etc/json/covid19.json'
@@ -418,10 +457,10 @@ def cure_people():
 
     print('도시명: {}'.format(gugun_name))
     print('누적 확진자: {}'.format(def_cnt_int))
-    print('현재 확진자: {}'.format(99999999999))
-    print('누적 완치자: {}'.format(99999999999))
-    print('사망자: {}'.format(99999999999))
-
+    print('현재 확진자: {}'.format(-1))
+    print('누적 완치자: {}'.format(-1))
+    print('사망자: {}'.format(-1))
+    # """
 
 # 템플릿 적용
 def cois_main(request):
