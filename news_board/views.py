@@ -1,10 +1,10 @@
 from django.shortcuts import render
-import corona_map.MongoDbManager as comong
 from django.shortcuts import render, get_object_or_404, redirect
-
-import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+import requests
+
+import corona_map.MongoDbManager as comong
 
 
 def news_board(request):
