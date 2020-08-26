@@ -6,7 +6,7 @@ import requests
 # 현재날짜를 사용하기 위한 모듈
 import datetime
 
-def infection_status(request):
+def infection_status():
     # 수녕, 서율, 지은
     sido_serviceKey = ['0',
                        'BjW9a8K51p0oRJ0hl%2BBpizJzZ9gT3e%2Beb75QhG9kXdeK9ENW7CCAl9nX28%2BRD97JlAsDrTv7StIwvUPCxA4iTw%3D%3D',

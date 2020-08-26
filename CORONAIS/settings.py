@@ -82,7 +82,8 @@ DATABASES = {
         'NAME': 'coronais', # DB명
         'USER': 'coronais', # 데이터베이스 계정
         'PASSWORD':'coronais', # 계정 비밀번호
-        'HOST':'192.168.0.16', # 데이테베이스 IP
+        'HOST':'localhost', # 데이테베이스 IP
+        # 'HOST':'192.168.0.16', # 데이테베이스 IP
         'PORT':'27017', # 데이터베이스 port
      }
 }

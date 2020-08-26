@@ -4,7 +4,7 @@ import pymongo
 class Infection_City:
     _instance = None
     # 몽고디비연결
-    client = pymongo.MongoClient(host='192.168.0.16',
+    client = pymongo.MongoClient(host='localhost',
                                  port=27017)
     # collection 생성
     database = client['coronais']['infection_city']
@@ -29,7 +29,7 @@ class Infection_City:
 class Infection_By_Age_Gender:
     _instance = None
     # 몽고디비연결
-    client = pymongo.MongoClient(host='192.168.0.16',
+    client = pymongo.MongoClient(host='localhost',
                                  port=27017)
     # collection 생성
     database = client['coronais']['infection_by_age_gender']
@@ -53,7 +53,7 @@ class Infection_By_Age_Gender:
 class Infection_Status:
     _instance = None
     # 몽고디비연결
-    client = pymongo.MongoClient(host='192.168.0.16',
+    client = pymongo.MongoClient(host='localhost',
                                  port=27017)
     # collection 생성
     database = client['coronais']['infection_status']
@@ -77,7 +77,7 @@ class Infection_Status:
 class News_Board:
     _instance = None
     # 몽고디비연결
-    client = pymongo.MongoClient(host='192.168.0.16',
+    client = pymongo.MongoClient(host='localhost',
                                  port=27017)
     # collection 생성
     database = client['coronais']['news_board']
