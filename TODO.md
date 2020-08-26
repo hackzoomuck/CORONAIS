@@ -10,4 +10,5 @@ ERROR: No matching distribution found for branca==0.4.1+3.g5887b9b (from -r requ
 # 남은 작업
 1. 전국 시, 군, 구 별 현황.
 데이터가 너무 많아 아직 서울시만 제공..
-2. 
+2. 몽고 디비에서 조회해서 데이터 사용하기.
+3. 댓글 로그인
