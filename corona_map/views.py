@@ -427,7 +427,7 @@ def infection_city_all_values():
     # 오늘 날짜 했는 데, 아직 시도별 api 데이터가 업데이트 되지 않아서 지난 날 것을 호출함.
     nowDate = int(now.strftime('%Y%m%d'))-1
     # 하루의 시도별 데이터
-    infection_date_data = comong.Infection_City().get_users_from_collection({'id': nowDate})
+    infection_date_data = comong.Infection_City().get_users_from_collection({})
 
     infection_city_all_values_list = []
     for idd in infection_date_data:
@@ -454,6 +454,26 @@ def infection_city_all_values():
 
     return infection_city_all_values_list
 
+# infection_state collection 전국 코로나 현황 수 get함수
+def infection_state_all_value():
+    now = datetime.datetime.now()
+    # 오늘 날짜 호출함.
+    nowDate = int(now.strftime('%Y%m%d'))-1
+    # 하루의 시도별 데이터
+    infection_date_data = comong.Infection_Status().get_users_from_collection({'id': nowDate})
+
+    item_dict = {}
+    for idd in infection_date_data:
+        # 확진자 수
+        item_dict['decidecnt'] = idd['decidecnt']
+        # 격리해제 수
+        item_dict['clearcnt'] = idd['clearcnt']
+        # 검사진행 수
+        item_dict['examcnt'] = idd['examcnt']
+        # 사망자 수
+        item_dict['deathcnt'] = idd['deathcnt']
+    print(item_dict)
+    return item_dict
 
 # 템플릿 적용
 def cois_main(request):
@@ -502,6 +522,7 @@ def cois_main(request):
     #     item_dict['localocccnt'] = int(item.find('localocccnt').string)
     #     item_list_result.append(item_dict)
     item_list_result=infection_city_all_values()
+    in_st_dict = infection_state_all_value()
     item_df = pd.DataFrame(
         columns=['createdt', 'stdday', 'defcnt', 'gubun', 'gubunen', 'incdec', 'isolclearcnt', 'deathcnt', 'isolingcnt'])
     for a in item_list_result:
@@ -527,7 +548,7 @@ def cois_main(request):
     lineChartVals = lineChartData['defcnt'].values.tolist()
     dateTimes = lineChartData['stdday'].values.tolist()
 
-    context = {'totalCount': totalCount, 'barPlotVals': barPlotVals, 'gubunNames': gubunNames,
+    context = {'decideCnt': in_st_dict['decidecnt'],'clearCnt': in_st_dict['clearcnt'],'examCnt': in_st_dict['examcnt'],'deathCnt': in_st_dict['deathcnt'],'totalCount': totalCount, 'barPlotVals': barPlotVals, 'gubunNames': gubunNames,
                'lineChartVals': lineChartVals, 'dateTimes': dateTimes}
     return render(request, 'corona_map/index.html', context)
 
