@@ -62,4 +62,4 @@ client = pymongo.MongoClient(host='localhost', port=27017)
 데이터가 너무 많아 아직 서울시만 제공..
 2. 몽고 디비에서 조회해서 데이터 사용하기.
 3. 댓글 로그인
-4. 메인 페이지 정리하기
+4. 메인 페이지(chart 수정하기)
