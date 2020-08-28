@@ -1,11 +1,11 @@
-import corona_map.MongoDbManager as comong
-from django.shortcuts import render, redirect
-from bson import json_util
+from django.http import HttpResponse
+import json
+from django.shortcuts import render
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from django.http import HttpResponse
 import requests
-import json
+
+import corona_map.MongoDbManager as comong
 
 
 # 뉴스 기사 리스트조회

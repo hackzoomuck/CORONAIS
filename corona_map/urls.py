@@ -28,7 +28,11 @@ urlpatterns = [
     # path('sidoinfo_state/', views.sidoinfo_state, name='sido'),
 
     # 완치자 데이터를 가져오는 페이지
+
     path('gugun-info/', views.get_gugun_info ,name='gugun-info'),
+
+    path('gugun-info/', views.call_gugun_info ,name='gugun-info')
+
 
     # loacalhost:8080/board-list : 코로나 뉴스게시판 리스트 페이지
     #path('board-list/', views.news_board, name='board-list'),
