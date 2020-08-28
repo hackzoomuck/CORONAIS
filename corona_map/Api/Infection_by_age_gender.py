@@ -11,7 +11,7 @@ def infection_by_age_gender():
     inf_serviceKey = ['67xjSd3vhpWMN4oQ3DztMgLyq4Aa1ugw1ssq%2FHeJAeniNIwyPspLp7XpNoa8mBbTJQPc3dAxqvtFm57fJIfq8w%3D%3D',
                       'hFxBvUwCFBcRvWK6wJdgZXgFmjnogBAgCMQ%2BWfZmCQngtc%2FkNb%2FvVqfS2ouV%2BxKMAbEbE94ZYhW3m6A3hxKyig%3D%3D',
                       '%2BNZvj3PPWZaxtFa6tqekV3%2BWlT4NSYB4HY5kXLacieOJKfCtyZpafsGzvJsZzvOMg2KUGrKEIQyy9k58uA1g1A%3D%3D']
-    SERVICE_KEY = unquote(inf_serviceKey[0])
+    SERVICE_KEY = unquote(inf_serviceKey[2])
     now = datetime.datetime.now()
     nowDate = int(now.strftime('%Y%m%d'))
 

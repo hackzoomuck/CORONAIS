@@ -14,14 +14,14 @@ def infection_city():
                       'hFxBvUwCFBcRvWK6wJdgZXgFmjnogBAgCMQ%2BWfZmCQngtc%2FkNb%2FvVqfS2ouV%2BxKMAbEbE94ZYhW3m6A3hxKyig%3D%3D',
                       '%2BNZvj3PPWZaxtFa6tqekV3%2BWlT4NSYB4HY5kXLacieOJKfCtyZpafsGzvJsZzvOMg2KUGrKEIQyy9k58uA1g1A%3D%3D']
     url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19SidoInfStateJson'
-    SERVICE_KEY = unquote(inf_serviceKey[1])
+    SERVICE_KEY = unquote(inf_serviceKey[1]),
     now = datetime.datetime.now()
     nowDate = int(now.strftime('%Y%m%d'))
     params = {
         'serviceKey': SERVICE_KEY,
         'pageNo': 1,
         'numOfRows': 1,
-        'startCreateDt': nowDate-1,
+        'startCreateDt': nowDate-10,
         'endCreateDt': nowDate
     }
 
