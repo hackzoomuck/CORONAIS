@@ -495,8 +495,77 @@ def cois_main(request):
     lineChartVals = lineChartData['localocccnt'].values.tolist()
     dateTimes = lineChartData['stdday'].values.tolist()
 
+
+    ##################################################################################
+    # 성별, 연령별 조회
+    sido_serviceKey = ['0',
+                       '%2BNZvj3PPWZaxtFa6tqekV3%2BWlT4NSYB4HY5kXLacieOJKfCtyZpafsGzvJsZzvOMg2KUGrKEIQyy9k58uA1g1A%3D%3D',
+                       '2']
+    url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19GenAgeCaseInfJson'
+    SERVICE_KEY = unquote(sido_serviceKey[1])
+    params = {
+        'serviceKey': SERVICE_KEY,
+        'pageNo': 10,
+        'numOfRows': 10,
+        'startCreateDt': 20200811,
+        'endCreateDt': 20200818
+    }
+    response = requests.get(url, params=params)
+
+    html = response.text
+    soup = BeautifulSoup(html, 'html.parser')
+    item_list = soup.select('item')
+    item_list_result = []
+    for idx, item in enumerate(item_list, 1):
+        item_dict = {}
+        # 확진자
+        item_dict['confcase'] = int(item.find('confcase').string)
+        # 확진률
+        item_dict['confcaserate'] = item.find('confcaserate').string
+        # 등록일시분초
+        item_dict['createdt'] = item.find('createdt').string
+        # 치명률
+        try:
+            item_dict['criticalrate'] = float(item.find('criticalrate').string)
+        except Exception:
+            item_dict['criticalrate'] = 0
+        # 사망자
+        item_dict['death'] = int(item.find('death').string)
+        # 사망률
+        item_dict['deathrate'] = item.find('deathrate').string
+        # 구분(성별,연령별)0-9
+        item_dict['gubun'] = item.find('gubun').string
+
+        item_list_result.append(item_dict)
+    item_df = pd.DataFrame(
+        columns=['confcase', 'confcaserate', 'createdt', 'criticalrate', 'death', 'deathrate', 'gubun'])
+    for a in item_list_result:
+        a_object = pd.Series(a)
+        item_df = item_df.append(a_object, ignore_index=True)
+
+    totalCount = item_df['death'].sum()
+
+    # 연령별 치명률 시각화
+    oldPlotData = item_df[['gubun', 'criticalrate']].groupby('gubun').mean()
+    oldPlotData = oldPlotData.reset_index()
+    oldPlotData.columns = ['gubun', 'criticalrate']
+    oldPlotData = oldPlotData.sort_values(by='criticalrate', ascending=False)
+    oldPlotData = oldPlotData.loc[(oldPlotData['gubun'] != '여성') & (oldPlotData['gubun'] != '남성')]
+    oldPlotVals = oldPlotData['criticalrate'].values.tolist()
+    oldGubunNames = oldPlotData['gubun'].values.tolist()
+
+    # 성별 치명률 시각화
+    genderPlotData = item_df[['gubun', 'criticalrate']].groupby('gubun').mean()
+    genderPlotData = genderPlotData.reset_index()
+    genderPlotData.columns = ['gubun', 'criticalrate']
+    genderPlotData = genderPlotData.sort_values(by='criticalrate', ascending=False)
+    genderPlotData = genderPlotData.loc[(genderPlotData['gubun'] == '여성') | (genderPlotData['gubun'] == '남성')]
+    genderPlotVals = genderPlotData['criticalrate'].values.tolist()
+    genderGubunNames = genderPlotData['gubun'].values.tolist()
+
     context = {'totalCount': totalCount, 'barPlotVals': barPlotVals, 'gubunNames': gubunNames,
-               'lineChartVals': lineChartVals, 'dateTimes': dateTimes}
+               'lineChartVals': lineChartVals, 'dateTimes': dateTimes, 'oldPlotVals': oldPlotVals, 'oldGubunNames': oldGubunNames,
+               'genderPlotVals': genderPlotVals, 'genderGubunNames': genderGubunNames}
     return render(request, 'corona_map/index.html', context)
 
 # 서울 지도
@@ -745,9 +814,9 @@ def chart_bar(request):
 def chart_bar_by_age_gender(request):
 
     sido_serviceKey = ['0',
-                       '67xjSd3vhpWMN4oQ3DztMgLyq4Aa1ugw1ssq%2FHeJAeniNIwyPspLp7XpNoa8mBbTJQPc3dAxqvtFm57fJIfq8w%3D%3D',
+                       '%2BNZvj3PPWZaxtFa6tqekV3%2BWlT4NSYB4HY5kXLacieOJKfCtyZpafsGzvJsZzvOMg2KUGrKEIQyy9k58uA1g1A%3D%3D',
                        '2']
-    url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19SidoInfStateJson'
+    url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19GenAgeCaseInfJson'
     SERVICE_KEY = unquote(sido_serviceKey[1])
     params = {
         'serviceKey': SERVICE_KEY,
@@ -809,5 +878,5 @@ def chart_bar_by_age_gender(request):
     genderGubunNames = genderPlotData['gubun'].values.tolist()
 
     context = {'totalCount': totalCount, 'oldPlotVals': oldPlotVals, 'oldGubunNames': oldGubunNames, 'genderPlotVals': genderPlotVals, 'genderGubunNames': genderGubunNames}
-    return render(request, 'corona_map/by_age_gender.html', context)
+    return render(request, 'corona_map/by_age_gender_piechart.html', context)
 
