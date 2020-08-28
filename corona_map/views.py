@@ -16,13 +16,14 @@ from corona_map.Api.Infection_city import infection_city
 from corona_map.Api.Infection_by_age_gender import infection_by_age_gender
 from corona_map.Api.Infection_status import infection_status
 
-from corona_map.Api.gugun_info import get_seoul_info_list
+from corona_map.Api.Gugun_status import init_gugun_data
+from corona_map.Api.Gugun_status import get_seoul_data_list
 
 
 
 def call_gugun_info(request):
-    seoul_gu_data_list = get_seoul_info_list()
-    print(seoul_gu_data_list)
+    # init_gugun_data()
+    get_seoul_data_list()
     return render(request, 'corona_map/gugun_info.html')
 
 # infection_city collection 에서 {시도, 확진자 수} 데이터 전처리 함수

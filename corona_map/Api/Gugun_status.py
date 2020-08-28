@@ -2,8 +2,9 @@ from bs4 import BeautifulSoup
 import requests
 import re
 
+import corona_map.MongoDbManager as DBmanager
 
-def get_seoul_gu_state_dict(gugun_info_dict) -> dict:
+def crawling_seoul_gu_state_dict(gugun_info_dict) -> dict:
     '''
      get_seoul_gu_state_dict 실제로 크롤링이 작동하는 함수
      gugun_info_dict 크롤링을 위한 데이터 파라미터
@@ -162,7 +163,7 @@ def get_seoul_gu_state_dict(gugun_info_dict) -> dict:
     }
     return gugun_data_dict
 
-def get_seoul_info_list() -> list:
+def get_seoul_info_dict() -> dict:
     # http://ncov.mohw.go.kr/ 코로나 바이러스 감염증 중앙대책본부 통계 자료
 
     seoul_gu_info_list = [] # 리턴되는 구,군 데이터 리스트
@@ -440,11 +441,9 @@ def get_seoul_info_list() -> list:
     }
     cities_data_list.append(city_data_dict)
 
-
     for city_data_dict in cities_data_list:
-        seoul_gu_info_list.append(get_seoul_gu_state_dict(city_data_dict))
+        seoul_gu_info_list.append(crawling_seoul_gu_state_dict(city_data_dict))
 
-    ######################### 강남은 강남 JSON 따로 있으니 처리 빼야함 ####################
     gugun_url = 'http://www.gangnam.go.kr/etc/json/covid19.json'
     gugun_name = '강남구'
     res = requests.get(gugun_url)
@@ -460,8 +459,39 @@ def get_seoul_info_list() -> list:
 
     seoul_gu_info_list.append(gangnam_data_from_json_dict)
 
-    seoul_data_dict={
-        'seoul':seoul_gu_info_list
+    seoul_data_dict = {
+        'seoul': seoul_gu_info_list
     }
 
     return seoul_data_dict
+
+
+def init_gugun_data():
+    print('서울 데이터 입력 중')
+    data_items_dict = get_seoul_info_dict()
+    DBmanager.Infection_Smallcity().add_gugun_status_datas_on_collection(data_items_dict)
+    print('서울 데이터 입력 완료')
+
+
+def get_seoul_data_list() -> list:
+    print('서울 데이터 꺼냄')
+    sql_query_0 = {}
+    sql_query_1 = {'_id': 0}
+
+    cursor_obj = DBmanager.Infection_Smallcity().get_gugun_status_datas_from_collection(sql_query_0, sql_query_1)
+
+    cursor_objs_list = list(cursor_obj)
+
+    seoul_gus_data_list = list()
+
+    for obj_dict in cursor_objs_list:
+        if obj_dict.get('seoul'):
+            seoul_gus_data_list = obj_dict['seoul']
+            break
+
+    for seoul_gu_data_dict in seoul_gus_data_list:
+        print(seoul_gu_data_dict['gubunsmall'])
+        print(seoul_gu_data_dict['defcnt'])
+        print(seoul_gu_data_dict['isolingcnt'])
+        print(seoul_gu_data_dict['isolclearcnt'])
+        print(seoul_gu_data_dict['deathcnt'])
