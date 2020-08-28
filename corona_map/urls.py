@@ -25,7 +25,7 @@ urlpatterns = [
     path('folium_page/', views.folium_page, name='folium'),
 
     # 테스트 페이지
-    path('test_api/', views.news_board_list, name='test_api')
+    path('test_api/', views.news_board_list, name='test_api'),
 
     # 완치자 데이터를 가져오는 페이지
     path('gugun-info/', views.call_gugun_info ,name='gugun-info')
