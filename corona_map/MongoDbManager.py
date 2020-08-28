@@ -81,8 +81,6 @@ class News_Board:
                                  port=27017)
     # collection 생성
     database = client['coronais']['news_board']
-
-
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = object.__new__(cls, *args, **kwargs)
@@ -91,6 +89,40 @@ class News_Board:
     def get_users_from_collection(cls, _query):
         assert cls.database
         return cls.database.find(_query)
+
+    def get_users_one_from_collection(cls, _query):
+        assert cls.database
+        return cls.database.find_one(_query)
+
+    def add_user_on_collection(cls, _data):
+        if type(_data) is list:
+            return cls.database.insert_many(_data)
+        else:
+            return cls.database.insert_one(_data)
+
+class News_Board_Comment:
+    _instance = None
+    # 몽고디비연결
+    client = pymongo.MongoClient(host='localhost',
+                                 port=27017)
+    # collection 생성
+    database = client['coronais']['news_board_comment']
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = object.__new__(cls, *args, **kwargs)
+        return cls._instance
+
+    def get_users_from_collection(cls, _query):
+        assert cls.database
+        return cls.database.find(_query)
+
+    def get_users_one_from_collection(cls, _query):
+        assert cls.database
+        return cls.database.find_one(_query)
+
+    def get_particular_users_from_collection(cls, _query, _query2):
+        assert cls.database
+        return cls.database.find(_query, _query2)
 
     def add_user_on_collection(cls, _data):
         if type(_data) is list:

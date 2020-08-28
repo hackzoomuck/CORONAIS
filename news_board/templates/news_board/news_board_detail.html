@@ -1,31 +1,144 @@
 {% extends 'news_board/base.html' %}
 
 {% block content%}
+<script>
+/*
+ * 페이지 로드되자마자 댓글 조회 불러오기
+ */
+$(document).ready(function(){
+    ajax_getCommentList();
+});
 
-    <div class="post">
+
+/*
+ * 댓글 등록하기(Ajax)
+ */
+function ajax_insert_comment(){
+    $.ajax({
+        type:'POST',
+        url : {% url 'news-comment-insert'%},
+        data:$('#commentForm').serialize(),
+        dataType:'text',
+        success : function(data){
+            if(data == 'success')
+            {
+                ajax_getCommentList();
+                $("#comment").val("");
+            }
+        },
+        error:function(request,status,error){
+            alert('ajax통신 실패');
+       }
+    });
+}
+
+
+/*
+ * 댓글 조회하기(Ajax)
+ */
+function ajax_getCommentList(){
+    $.ajax({
+        type:'GET',
+        url: '{% url 'news-comment-list' pk_id=board_detail.pk_id%}',
+        dataType: 'json',
+        //contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+        success: function(data){
+            console.log(data)
+            var html = "";
+            var cCnt = Object.keys(data).length;
+
+            if (data.length > 0){
+                for (var i=0; i<Object.keys(data).length; i++){
+                    html += "<div>";
+                    html +=     "<div>";
+                    html +=         "<table class='table'>";
+                    html +=             "<h6><strong>" + data[i].pk_id + "</strong></h6>"
+                    html +=                 data[i].comment + "<tr><td></td></tr>";
+                    html +=         "</table>";
+                    html +=     "</div>";
+                    html += "</div>";
+                }
+            }else{
+                html += "<div>";
+                html +=     "<div>";
+                html +=         "<table class='table'>";
+                html +=             "<h6><strong>등록된 댓글이 없습니다.</strong></h6>"
+                html +=         "</table>";
+                html +=     "</div>";
+                html += "</div>";
+            }
+            $('#cCnt').html(cCnt)
+            $('#commentList').html(html)
+        },
+        error: function (data){
+            console.log(data);
+        }
+    });
+}
+
+
+{% comment %}    function post_remove(){
+        //{% url 'post_delete' pk=post.pk %}
+        var result = confirm('삭제하시겠습니까?')
+        if(result){
+            var remove_url = "{% url 'post_delete' pk=post.pk %}"
+            document.location.href = remove_url
+        }
+    }{% endcomment %}
+
+{% comment %}    {% if user.is_authenticated %}
+            <a class="btn btn-default" href="{% url 'post_edit' pk=post.pk %}">
+                <span class="glyphicon glyphicon-pencil"></span>
+            </a>
+            <a class="btn btn-default" href="#" onclick="post_remove()">
+                <span class="glyphicon glyphicon-remove"></span>
+            </a>
+    {% endif %}{% endcomment %}
+</script>
+    <div class="post container">
         {% if post.published_date%}
         <div class="date">
             {{post.published_date}}
         </div>
         {% endif %}
 
-        <h1>{{post.title}}</h1>
-        <p>{{post.text|linebreaksbr}}</p>
+        <h1>{{board_detail.title}}</h1>
+        <p>{{board_detail.content|linebreaksbr}}</p>
     </div>
-<hr>
-<a class="btn btn-default" href="{% url 'add_comment_to_post' pk=post.pk %}">Add comment</a>
 
-{% for comment in post.comments.all %}
-    {% if user.is_authenticated or comment.approved_comment %}
-        <div class="comment">
-            <div class="date">
-                {{comment.created_date}}
+
+    <div class="container">
+    <form id="commentForm" name="commentForm" method="post">
+        {% csrf_token %}
+    <br><br>
+        <div>
+            <div>
+                <span><strong>Comments</strong></span> <span id="cCnt"></span>
             </div>
-            <strong>{{comment.author}}</strong>
-            <p>{{comment.text|linebreaks}}</p>
+            <div>
+                <table class="table">
+                    <tr>
+                        <td>
+                            <textarea style="width: 1000px" rows="3" cols="30" id="comment" name="comment" placeholder="댓글을 입력하세요"></textarea>
+                            <br>
+                            <div>
+                                <a href='#' onClick="ajax_insert_comment()" class="btn pull-right btn-primary">등록</a>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
-    {% endif %}
-{% empty %}
-    <p>No comment here yet :(</p>
-{% endfor %}
+        <input type="hidden" id="pk_id" name="pk_id" value="{{board_detail.pk_id}}" />
+    </form>
+    </div>
+
+    <div class="container">
+    <form id="commentListForm" name="commentListForm" method="post">
+        <div id="commentList">
+
+        </div>
+    </form>
+    </div>
+
 {% endblock %}

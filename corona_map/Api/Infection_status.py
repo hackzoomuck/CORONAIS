@@ -6,19 +6,22 @@ import requests
 # 현재날짜를 사용하기 위한 모듈
 import datetime
 
-def infection_status(request):
+def infection_status():
     # 수녕, 서율, 지은
     sido_serviceKey = ['0',
                        'BjW9a8K51p0oRJ0hl%2BBpizJzZ9gT3e%2Beb75QhG9kXdeK9ENW7CCAl9nX28%2BRD97JlAsDrTv7StIwvUPCxA4iTw%3D%3D',
                        '%2BNZvj3PPWZaxtFa6tqekV3%2BWlT4NSYB4HY5kXLacieOJKfCtyZpafsGzvJsZzvOMg2KUGrKEIQyy9k58uA1g1A%3D%3D']
     url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson'
     SERVICE_KEY = unquote(sido_serviceKey[1])
+
+    now = datetime.datetime.now()
+    nowDate = int(now.strftime('%Y%m%d'))
     params = {
         'serviceKey': SERVICE_KEY,
         'pageNo': 10,
         'numOfRows': 10,
-        'startCreateDt': 20200811,
-        'endCreateDt': 20200818
+        'startCreateDt': 20200819,
+        'endCreateDt': nowDate
     }
     res = requests.get(url, params=params)
     html = res.text
