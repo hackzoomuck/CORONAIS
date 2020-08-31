@@ -496,7 +496,9 @@ def get_seoul_data_list() -> list:
             seoul_gus_data_list = obj_dict['seoul']
             break
 
-    print(seoul_gus_data_list)
+    #print(seoul_gus_data_list)
+
+    return seoul_gus_data_list
     # for seoul_gu_data_dict in seoul_gus_data_list:
     #     print(seoul_gu_data_dict['gubunsmall'])
     #     print(seoul_gu_data_dict['defcnt'])
