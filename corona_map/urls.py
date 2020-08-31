@@ -28,7 +28,10 @@ urlpatterns = [
     path('test_api/', views.news_board_list, name='test_api'),
 
     # 완치자 데이터를 가져오는 페이지
-    path('gugun-info/', views.call_gugun_info ,name='gugun-info')
+    path('gugun-info/', views.call_gugun_info ,name='gugun-info'),
+
+    # data 등록
+    path('data-init/', views.call_data_init, name='data-init')
 
 
     # loacalhost:8080/board-list : 코로나 뉴스게시판 리스트 페이지

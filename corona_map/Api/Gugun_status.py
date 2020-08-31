@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import re
+import datetime
 
 import corona_map.MongoDbManager as DBmanager
 
@@ -38,7 +39,8 @@ def crawling_seoul_gu_state_dict(gugun_info_dict) -> dict:
     def_cnt_tag = gugun_info_dict['def_cnt_tag']  # 누적 감염자 tag
     isol_ing_cnt_tag = gugun_info_dict['isol_ing_cnt_tag']  # 현재 확진자 tag
 
-    res = requests.get(gugun_url, headers=res_headers)
+    res = requests.get(gugun_url, headers=res_headers, verify=False)
+
     if 200 <= res.status_code < 400:
         html = res.text
         soup = BeautifulSoup(html, 'html.parser')
@@ -234,10 +236,10 @@ def get_seoul_info_dict() -> dict:
     city_data_dict = {
         'gugun_url': 'http://www.sd.go.kr/sd/intro.do',
         'gugun_name': '성동구',
-        'isol_clear_cnt_tag': '#content > div.top_box > div > div.top_area1 > ul > li.alone > span:nth-child(3) > em',
+        'isol_clear_cnt_tag': '.top_box .top_area1 .status_list .stat_txt:nth-last-child(1) em',
         'sub_isol_clear_cnt_tag': '',
-        'def_cnt_tag': '#content > div.top_box > div > div.top_area1 > ul > li.alone > span.stat_title',
-        'isol_ing_cnt_tag': '#content > div.top_box > div > div.top_area1 > ul > li.alone > span.stat_txt.first_txt > em'
+        'def_cnt_tag': '.top_box .top_area1 .status_list .alone .stat_title',
+        'isol_ing_cnt_tag': '.top_box .top_area1 .status_list .stat_txt.first_txt em'
     }
     cities_data_list.append(city_data_dict)
 
@@ -245,10 +247,10 @@ def get_seoul_info_dict() -> dict:
     city_data_dict = {
         'gugun_url': 'http://www.sb.go.kr/',
         'gugun_name': '성북구',
-        'isol_clear_cnt_tag': '#main_popup > div.wrap-div1 > div.box2-n.clearfix > div.con2.style2 > div > div.box1.clearfix > div.box-c.c1 > p > span.num',
+        'isol_clear_cnt_tag': '#main_popup > div.wrap-div1 > div.box2-n.clearfix > div.con2.style2 > div > div.box1.clearfix > div.box-c.c3 > p > span.num',
         'sub_isol_clear_cnt_tag': '',
         'def_cnt_tag': '#main_popup > div.wrap-div1 > div.box2-n.clearfix > div.con2.style2 > div > div.box1.clearfix > div.box-c.c1 > p > span.num',
-        'isol_ing_cnt_tag': '#main_popup > div.wrap-div1 > div.box2-n.clearfix > div.con2.style2 > div > div.box1.clearfix > div.box-c.c2 > p > span.num'
+        'isol_ing_cnt_tag': '#main_popup > div.wrap-div1 > div.box2-n.clearfix > div.con2.style2 > div > div.box1.clearfix > div.box-c.c2 > p > span.num:nth-last-child(1)'
     }
     cities_data_list.append(city_data_dict)
 
@@ -267,10 +269,10 @@ def get_seoul_info_dict() -> dict:
     city_data_dict = {
         'gugun_url': 'http://www.dobong.go.kr/',
         'gugun_name': '도봉구',
-        'isol_clear_cnt_tag': '#base > div.new_curtain > div > ul > li.box01 > div > div > div.corona_box.left_box > div > dl:nth-child(3) > dd',
+        'isol_clear_cnt_tag': '.new_curtain .curtain_inner .mt20 .box01 .mt10 .corona_box.left_box .count_list.list_add.left dl:nth-child(3) dd',
         'sub_isol_clear_cnt_tag': '',
-        'def_cnt_tag': '#base > div.new_curtain > div > ul > li.box01 > div > div > div.corona_box.left_box > div > dl:nth-child(1) > dd',
-        'isol_ing_cnt_tag': '#base > div.new_curtain > div > ul > li.box01 > div > div > div.corona_box.left_box > div > dl:nth-child(2) > dd'
+        'def_cnt_tag': '.new_curtain .curtain_inner .mt20 .box01 .mt10 .corona_box.left_box .count_list.list_add.left dl:nth-child(1) dd',
+        'isol_ing_cnt_tag': '.new_curtain .curtain_inner .mt20 .box01 .mt10 .corona_box.left_box .count_list.list_add.left dl:nth-child(2) dd'
     }
     cities_data_list.append(city_data_dict)
 
@@ -460,7 +462,8 @@ def get_seoul_info_dict() -> dict:
     seoul_gu_info_list.append(gangnam_data_from_json_dict)
 
     seoul_data_dict = {
-        'seoul': seoul_gu_info_list
+        'seoul': seoul_gu_info_list,
+        'stdday': int(datetime.datetime.now().strftime('%Y%m%d'))
     }
 
     return seoul_data_dict
@@ -475,13 +478,14 @@ def init_gugun_data():
 
 def get_seoul_data_list() -> list:
     print('서울 데이터 꺼냄')
-    sql_query_0 = {}
+    now_date = int(datetime.datetime.now().strftime('%Y%m%d'))
+    sql_query_0 = {'stdday':now_date}
     sql_query_1 = {'_id': 0}
 
     cursor_obj = DBmanager.Infection_Smallcity().get_gugun_status_datas_from_collection(sql_query_0, sql_query_1)
 
     cursor_objs_list = list(cursor_obj)
-
+    print(cursor_objs_list)
     seoul_gus_data_list = list()
 
     for obj_dict in cursor_objs_list:
@@ -489,9 +493,5 @@ def get_seoul_data_list() -> list:
             seoul_gus_data_list = obj_dict['seoul']
             break
 
-    for seoul_gu_data_dict in seoul_gus_data_list:
-        print(seoul_gu_data_dict['gubunsmall'])
-        print(seoul_gu_data_dict['defcnt'])
-        print(seoul_gu_data_dict['isolingcnt'])
-        print(seoul_gu_data_dict['isolclearcnt'])
-        print(seoul_gu_data_dict['deathcnt'])
+    # print(seoul_gus_data_list)
+    return seoul_gus_data_list
