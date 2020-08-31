@@ -156,3 +156,31 @@ class Infection_Smallcity:
             return cls.database.insert_many(_data)
         else:
             return cls.database.insert_one(_data)
+
+
+class Infection_Smallcity_Calc:
+    '''
+    계산된 구 데이터
+    '''
+
+    _instance = None
+    # 몽고디비연결
+    client = pymongo.MongoClient(host='localhost',
+                                 port=27017)
+    # collection 생성
+    database = client['coronais']['infection_smallcity_calc']
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = object.__new__(cls, *args, **kwargs)
+        return cls._instance
+
+    def get_gugun_status_datas_from_collection(cls, *_query):
+        assert cls.database
+        return cls.database.find(_query[0], _query[1])
+
+    def add_gugun_status_datas_on_collection(cls, _data):
+        if type(_data) is list:
+            return cls.database.insert_many(_data)
+        else:
+            return cls.database.insert_one(_data)

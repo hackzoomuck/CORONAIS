@@ -16,9 +16,8 @@ from corona_map.Api.Infection_city import infection_city
 from corona_map.Api.Infection_by_age_gender import infection_by_age_gender
 from corona_map.Api.Infection_status import infection_status
 
-from corona_map.Api.Gugun_status import get_seoul_data_list
 from corona_map.Api.data_init import seoul_data_init
-
+from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list
 
 def call_data_init(request):
     seoul_data_init()
@@ -26,8 +25,8 @@ def call_data_init(request):
 
 
 def call_gugun_info(request):
-    get_seoul_data_list() # Gugun_status_calc 에서 가져오는 가공데이터로 변경 예정
-    return render(request, 'corona_map/coIs_home.html', {'soup_data': 'call_gugun_info에서 넘어옴'})
+    data = get_seoul_calc_data_list()
+    return render(request, 'corona_map/coIs_home.html', {'soup_data': data})
 
 
 # infection_city collection 에서 {시도, 확진자 수} 데이터 전처리 함수
