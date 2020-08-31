@@ -11,9 +11,6 @@ import corona_map.MongoDbManager as comong
 # 뉴스 기사 리스트조회
 def news_board(request):
     board_list = comong.News_Board().get_users_from_collection({})
-    #print(board_list,'나오냐---------------------------------------------')
-    for i in board_list:
-        print(i, '나오냐--------------------------')
     return render(request, 'news_board/news_board_list.html', {'board_list': board_list})
 
 
@@ -73,5 +70,6 @@ def news_comment_insert(request):
 
 # Ajax로 댓글 조회 불러오기
 def news_comment_list(request, id):
-    comment_list = comong.News_Board_Comment().get_particular_users_from_collection({'id': id}, {'_id': 0})
+    print('news_comment_list진입')
+    comment_list = comong.News_Board_Comment().get_particular_users_from_collection({'id': str(id)}, {'_id': 0})
     return HttpResponse(json.dumps(list(comment_list)), content_type='application/json')

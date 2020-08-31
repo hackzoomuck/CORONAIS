@@ -19,13 +19,16 @@ from corona_map.Api.Infection_status import infection_status
 from corona_map.Api.Gugun_status import get_seoul_data_list
 from corona_map.Api.data_init import seoul_data_init
 
+
 def call_data_init(request):
     seoul_data_init()
     return render(request, 'corona_map/coIs_home.html', {'soup_data': 'call_data_init에서 넘어옴'})
 
+
 def call_gugun_info(request):
     get_seoul_data_list() # Gugun_status_calc 에서 가져오는 가공데이터로 변경 예정
     return render(request, 'corona_map/coIs_home.html', {'soup_data': 'call_gugun_info에서 넘어옴'})
+
 
 # infection_city collection 에서 {시도, 확진자 수} 데이터 전처리 함수
 def infection_city_all_values():
@@ -60,6 +63,7 @@ def infection_city_all_values():
 
     return infection_city_all_values_list
 
+
 # infection_state collection 전국 코로나 현황 수 get함수
 def infection_state_all_value():
     now = datetime.datetime.now()
@@ -80,6 +84,30 @@ def infection_state_all_value():
         item_dict['deathcnt'] = idd['deathcnt']
     return item_dict
 
+
+def infection_by_age_gender_all_value():
+    infection_date_data = comong.Infection_By_Age_Gender().get_users_from_collection({})
+    infection_by_age_gender_all_value_list = []
+    for idd in infection_date_data:
+        item_dict = {}
+        # 확진자
+        item_dict['confcase'] = idd['confcase']
+        # 확진률
+        item_dict['confcaserate'] = idd['confcaserate']
+        # 등록일시분초
+        item_dict['createdt'] = idd['createdt']
+        # 치명률
+        item_dict['criticalrate'] = idd['criticalrate']
+        # 사망자
+        item_dict['death'] = idd['death']
+        # 사망률
+        item_dict['deathrate'] = idd['deathrate']
+        # 구분(성별,연령별)0-9
+        item_dict['gubun'] = idd['gubun']
+        infection_by_age_gender_all_value_list.append(item_dict)
+    return infection_by_age_gender_all_value_list
+
+
 # 템플릿 적용
 def cois_main(request):
     
@@ -90,8 +118,6 @@ def cois_main(request):
     for a in item_list_result:
         a_object = pd.Series(a)
         item_df = item_df.append(a_object, ignore_index=True)
-
-    totalCount = item_df['deathcnt'].sum()
 
     # 지역별 확진자 현황
     barPlotData = item_df[['gubun', 'defcnt']].groupby('gubun').sum()
@@ -111,56 +137,17 @@ def cois_main(request):
     dateTimes = lineChartData['stdday'].values.tolist()
 
     ##################################################################################
-    # 성별, 연령별 조회
-    sido_serviceKey = ['0',
-                       '%2BNZvj3PPWZaxtFa6tqekV3%2BWlT4NSYB4HY5kXLacieOJKfCtyZpafsGzvJsZzvOMg2KUGrKEIQyy9k58uA1g1A%3D%3D',
-                       '2']
-    url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19GenAgeCaseInfJson'
-    SERVICE_KEY = unquote(sido_serviceKey[1])
-    params = {
-        'serviceKey': SERVICE_KEY,
-        'pageNo': 10,
-        'numOfRows': 10,
-        'startCreateDt': 20200811,
-        'endCreateDt': 20200818
-    }
-    response = requests.get(url, params=params)
-
-    html = response.text
-    soup = BeautifulSoup(html, 'html.parser')
-    item_list = soup.select('item')
-    item_list_result = []
-    for idx, item in enumerate(item_list, 1):
-        item_dict = {}
-        # 확진자
-        item_dict['confcase'] = int(item.find('confcase').string)
-        # 확진률
-        item_dict['confcaserate'] = item.find('confcaserate').string
-        # 등록일시분초
-        item_dict['createdt'] = item.find('createdt').string
-        # 치명률
-        try:
-            item_dict['criticalrate'] = float(item.find('criticalrate').string)
-        except Exception:
-            item_dict['criticalrate'] = 0
-        # 사망자
-        item_dict['death'] = int(item.find('death').string)
-        # 사망률
-        item_dict['deathrate'] = item.find('deathrate').string
-        # 구분(성별,연령별)0-9
-        item_dict['gubun'] = item.find('gubun').string
-
-        item_list_result.append(item_dict)
-    item_df = pd.DataFrame(
+    # 성별, 연령별
+    age_gender_list_result = infection_by_age_gender_all_value()
+    age_gender_df = pd.DataFrame(
         columns=['confcase', 'confcaserate', 'createdt', 'criticalrate', 'death', 'deathrate', 'gubun'])
-    for a in item_list_result:
+    for a in age_gender_list_result:
         a_object = pd.Series(a)
-        item_df = item_df.append(a_object, ignore_index=True)
-
-    totalCount = item_df['death'].sum()
+        age_gender_df = age_gender_df.append(a_object, ignore_index=True)
+    ##################################################################################
 
     # 연령별 치명률 시각화
-    oldPlotData = item_df[['gubun', 'criticalrate']].groupby('gubun').mean()
+    oldPlotData = age_gender_df[['gubun', 'criticalrate']].groupby('gubun').mean()
     oldPlotData = oldPlotData.reset_index()
     oldPlotData.columns = ['gubun', 'criticalrate']
     oldPlotData = oldPlotData.sort_values(by='criticalrate', ascending=False)
@@ -168,8 +155,9 @@ def cois_main(request):
     oldPlotVals = oldPlotData['criticalrate'].values.tolist()
     oldGubunNames = oldPlotData['gubun'].values.tolist()
 
+
     # 성별 치명률 시각화
-    genderPlotData = item_df[['gubun', 'criticalrate']].groupby('gubun').mean()
+    genderPlotData = age_gender_df[['gubun', 'criticalrate']].groupby('gubun').mean()
     genderPlotData = genderPlotData.reset_index()
     genderPlotData.columns = ['gubun', 'criticalrate']
     genderPlotData = genderPlotData.sort_values(by='criticalrate', ascending=False)
@@ -177,7 +165,7 @@ def cois_main(request):
     genderPlotVals = genderPlotData['criticalrate'].values.tolist()
     genderGubunNames = genderPlotData['gubun'].values.tolist()
 
-    context = {'totalCount': totalCount, 'barPlotVals': barPlotVals, 'gubunNames': gubunNames,
+    context = {'barPlotVals': barPlotVals, 'gubunNames': gubunNames,
                'lineChartVals': lineChartVals, 'dateTimes': dateTimes, 'oldPlotVals': oldPlotVals, 'oldGubunNames': oldGubunNames,
                'genderPlotVals': genderPlotVals, 'genderGubunNames': genderGubunNames, 'decideCnt': in_st_dict['decidecnt'],'clearCnt': in_st_dict['clearcnt'],'examCnt': in_st_dict['examcnt'],'deathCnt': in_st_dict['deathcnt']}
 
