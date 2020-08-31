@@ -24,7 +24,7 @@ def call_data_init(request):
     return render(request, 'corona_map/coIs_home.html', {'soup_data': 'call_data_init에서 넘어옴'})
 
 def call_gugun_info(request):
-    get_seoul_data_list()
+    get_seoul_data_list() # Gugun_status_calc 에서 가져오는 가공데이터로 변경 예정
     return render(request, 'corona_map/coIs_home.html', {'soup_data': 'call_gugun_info에서 넘어옴'})
 
 # infection_city collection 에서 {시도, 확진자 수} 데이터 전처리 함수
@@ -78,7 +78,6 @@ def infection_state_all_value():
         item_dict['examcnt'] = idd['examcnt']
         # 사망자 수
         item_dict['deathcnt'] = idd['deathcnt']
-    print(item_dict)
     return item_dict
 
 # 템플릿 적용
