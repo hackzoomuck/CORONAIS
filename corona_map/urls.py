@@ -35,6 +35,6 @@ urlpatterns = [
 
 
     # loacalhost:8080/board-list : 코로나 뉴스게시판 리스트 페이지
-    #path('board-list/', views.news_board, name='board-list'),
+    #path('board-list/', views.seoul_map, name='board-list'),
 
 ]

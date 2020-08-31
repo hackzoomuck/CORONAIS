@@ -20,4 +20,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('corona_map.urls')),
     path('', include('news_board.urls')),
+    path('', include('seoul_map.urls')),
 ]
