@@ -24,8 +24,6 @@ def crawling_seoul_gu_state_dict(gugun_info_dict) -> dict:
     def_cnt = None  # 누적 감염자
     isol_ing_cnt = None  # 현재 확진자
 
-    nowDate = None # 현재 날짜
-
     res_headers = {
         'User-Agent': (
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'),
@@ -40,7 +38,6 @@ def crawling_seoul_gu_state_dict(gugun_info_dict) -> dict:
     sub_isol_clear_cnt_tag = gugun_info_dict['sub_isol_clear_cnt_tag']  # 누적 완치자 tag2
     def_cnt_tag = gugun_info_dict['def_cnt_tag']  # 누적 감염자 tag
     isol_ing_cnt_tag = gugun_info_dict['isol_ing_cnt_tag']  # 현재 확진자 tag
-    nowDate = int(datetime.datetime.now().strftime('%Y%m%d'))
 
     res = requests.get(gugun_url, headers=res_headers, verify=False)
 
@@ -164,8 +161,7 @@ def crawling_seoul_gu_state_dict(gugun_info_dict) -> dict:
         'defcnt': def_cnt_int,
         'isolingcnt':isol_ing_cnt_int,
         'isolclearcnt':isol_clear_cnt_int,
-        'deathcnt':death_cnt_int,
-        'stdday':nowDate
+        'deathcnt':death_cnt_int
     }
     return gugun_data_dict
 
@@ -460,14 +456,14 @@ def get_seoul_info_dict() -> dict:
         'defcnt': def_cnt_int,
         'isolingcnt': -1,
         'isolclearcnt': -1,
-        'deathcnt': -1,
-        'stdday':int(datetime.datetime.now().strftime('%Y%m%d'))
+        'deathcnt': -1
     }
 
     seoul_gu_info_list.append(gangnam_data_from_json_dict)
 
     seoul_data_dict = {
-        'seoul': seoul_gu_info_list
+        'seoul': seoul_gu_info_list,
+        'stdday': int(datetime.datetime.now().strftime('%Y%m%d'))
     }
 
     return seoul_data_dict
@@ -482,13 +478,14 @@ def init_gugun_data():
 
 def get_seoul_data_list() -> list:
     print('서울 데이터 꺼냄')
-    sql_query_0 = {}
+    now_date = int(datetime.datetime.now().strftime('%Y%m%d'))
+    sql_query_0 = {'stdday':now_date}
     sql_query_1 = {'_id': 0}
 
     cursor_obj = DBmanager.Infection_Smallcity().get_gugun_status_datas_from_collection(sql_query_0, sql_query_1)
 
     cursor_objs_list = list(cursor_obj)
-
+    print(cursor_objs_list)
     seoul_gus_data_list = list()
 
     for obj_dict in cursor_objs_list:
@@ -496,13 +493,4 @@ def get_seoul_data_list() -> list:
             seoul_gus_data_list = obj_dict['seoul']
             break
 
-    #print(seoul_gus_data_list)
-
     return seoul_gus_data_list
-    # for seoul_gu_data_dict in seoul_gus_data_list:
-    #     print(seoul_gu_data_dict['gubunsmall'])
-    #     print(seoul_gu_data_dict['defcnt'])
-    #     print(seoul_gu_data_dict['isolingcnt'])
-    #     print(seoul_gu_data_dict['isolclearcnt'])
-    #     print(seoul_gu_data_dict['deathcnt'])
-    #     print(seoul_gu_data_dict['stdday'])
