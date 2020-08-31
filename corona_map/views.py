@@ -63,7 +63,7 @@ def infection_city_all_values():
 def infection_state_all_value():
     now = datetime.datetime.now()
     # 오늘 날짜 호출함.
-    nowDate = int(now.strftime('%Y%m%d'))-1
+    nowDate = int(now.strftime('%Y%m%d'))
     # 하루의 시도별 데이터
     infection_date_data = comong.Infection_Status().get_users_from_collection({'id': nowDate})
 
@@ -211,7 +211,7 @@ def seoul(request):
 def infection_city_gubun_defcnt():
     now = datetime.datetime.now()
     # 오늘 날짜 했는 데, 아직 시도별 api 데이터가 업데이트 되지 않아서 지난 날 것을 호출함.
-    nowDate = int(now.strftime('%Y%m%d'))-1
+    nowDate = int(now.strftime('%Y%m%d'))
     # 하루의 시도별 데이터
     infection_date_data = comong.Infection_City().get_users_from_collection({'id':nowDate})
 
@@ -229,10 +229,10 @@ def infection_city_gubun_defcnt():
 # infection_city_gubun_defcnt() 함수 사용
 def folium_page(request):
     # mongodb collection infection_city에 api request해서 데이터 저장.
-    print(Infection_city.infection_city())
-    print(News_board.news_board_list())
-    print(Infection_by_age_gender.infection_by_age_gender())
-    print(Infection_status.infection_status())
+    # print(Infection_city.infection_city())
+    # print(News_board.news_board_list())
+    # print(Infection_by_age_gender.infection_by_age_gender())
+    # print(Infection_status.infection_status())
 
     soup_sido_data_list = infection_city_gubun_defcnt()
     geo_sido_data = 'corona_map/static/json_data/korea_sido.json'
@@ -253,10 +253,10 @@ def folium_page(request):
         series_obj = pd.Series(sido_data)
         data_df = data_df.append(series_obj, ignore_index=True)
 
-    # 서울시 중심부의 위도, 경도
-    seoul_center = [36.3, 127.8]
+    # 보여주는 중심부의 위도, 경도
+    seoul_center = [35.5, 127.8]
     # 맵이 center 에 위치하고, zoom 레벨은 7로 시작하는 맵 m
-    m = folium.Map(location=seoul_center, zoom_start=6)
+    m = folium.Map(location=seoul_center, zoom_start=6, width='100%', height='100%')
 
     # Choropleth 레이어를 만들고, 맵 m에 추가
     folium.Choropleth(
@@ -264,8 +264,10 @@ def folium_page(request):
         data=data_df,
         columns=('시', '확진자'),
         key_on='feature.properties.CTP_KOR_NM',
-        fill_color='PuRd',
-        legend_name='확진자', ).add_to(m)
+        fill_color='PuRd'
+         ).add_to(m)
+
+
 
     sido_lati_longi = [{'시':'제주','위도':33.37,'경도':126.52,'링크':'"https://www.jeju.go.kr/corona19.jsp#corona-main"'},\
                        {'시':'경남','위도':35.3426,'경도':128.7092,'링크':'"http://xn--19-q81ii1knc140d892b.kr/main/main.do#close"'},\
