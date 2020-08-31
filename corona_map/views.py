@@ -84,27 +84,57 @@ def infection_state_all_value():
     return item_dict
 
 
-def infection_by_age_gender_all_value():
-    infection_date_data = comong.Infection_By_Age_Gender().get_users_from_collection({})
-    infection_by_age_gender_all_value_list = []
-    for idd in infection_date_data:
-        item_dict = {}
-        # 확진자
-        item_dict['confcase'] = idd['confcase']
-        # 확진률
-        item_dict['confcaserate'] = idd['confcaserate']
-        # 등록일시분초
-        item_dict['createdt'] = idd['createdt']
-        # 치명률
-        item_dict['criticalrate'] = idd['criticalrate']
-        # 사망자
-        item_dict['death'] = idd['death']
-        # 사망률
-        item_dict['deathrate'] = idd['deathrate']
-        # 구분(성별,연령별)0-9
-        item_dict['gubun'] = idd['gubun']
-        infection_by_age_gender_all_value_list.append(item_dict)
-    return infection_by_age_gender_all_value_list
+def infection_by_age_all_value():
+    infection_date_data = comong.Infection_By_Age_Gender().get_aggregate_users_from_collection(
+        [
+            {'$match': {'$and': [{'gubun': {'$not': {'$regex': '여성'}}}, {'gubun': {'$not': {'$regex': '남성'}}}]}},
+            {'$group': {'_id': '$gubun', 'mean_criticalrate': {'$sum': '$criticalrate'}}},
+            {'$sort': {'mean_criticalrate': -1}},
+            {
+                '$project': {
+                    'gubun': '$_id',
+                    'mean_criticalrate': 1,
+                    '_id': 0
+                }
+            }
+        ]
+    )
+    infection_by_age_all_value_list = list(infection_date_data)
+    age_key_list = []
+    age_value_list = []
+    for infection_by_age_all_value_dict in infection_by_age_all_value_list:
+        age_key_list.append(infection_by_age_all_value_dict['gubun'])
+        age_value_list.append(infection_by_age_all_value_dict['mean_criticalrate'])
+
+    context = {'age_key_list': age_key_list, 'age_value_list': age_value_list}
+
+    return context
+
+
+def infection_by_gender_all_value():
+    infection_date_data = comong.Infection_By_Age_Gender().get_aggregate_users_from_collection(
+        [
+            {'$match': {'$or': [{'gubun': {'$regex': '여성'}}, {'gubun': {'$regex': '남성'}}]}},
+            {'$group': {'_id': '$gubun', 'mean_criticalrate': {'$sum': '$criticalrate'}}},
+            {'$sort': {'mean_criticalrate': -1}},
+            {
+                '$project': {
+                    'gubun': '$_id',
+                    'mean_criticalrate': 1,
+                    '_id': 0
+                }
+            }
+        ]
+    )
+    infection_by_gender_all_value_list = list(infection_date_data)
+    age_key_list = []
+    age_value_list = []
+    for infection_by_age_all_value_dict in infection_by_gender_all_value_list:
+        age_key_list.append(infection_by_age_all_value_dict['gubun'])
+        age_value_list.append(infection_by_age_all_value_dict['mean_criticalrate'])
+
+    context = {'gender_key_list': age_key_list, 'gender_value_list': age_value_list}
+    return context
 
 
 # 템플릿 적용
@@ -137,32 +167,19 @@ def cois_main(request):
 
     ##################################################################################
     # 성별, 연령별
-    age_gender_list_result = infection_by_age_gender_all_value()
-    age_gender_df = pd.DataFrame(
-        columns=['confcase', 'confcaserate', 'createdt', 'criticalrate', 'death', 'deathrate', 'gubun'])
-    for a in age_gender_list_result:
-        a_object = pd.Series(a)
-        age_gender_df = age_gender_df.append(a_object, ignore_index=True)
-    ##################################################################################
+    # 연령별 데이터 가져오기
+    age_result_dict = infection_by_age_all_value()
+    # 성별 데이터 가져오기
+    gender_result_dict = infection_by_gender_all_value()
 
-    # 연령별 치명률 시각화
-    oldPlotData = age_gender_df[['gubun', 'criticalrate']].groupby('gubun').mean()
-    oldPlotData = oldPlotData.reset_index()
-    oldPlotData.columns = ['gubun', 'criticalrate']
-    oldPlotData = oldPlotData.sort_values(by='criticalrate', ascending=False)
-    oldPlotData = oldPlotData.loc[(oldPlotData['gubun'] != '여성') & (oldPlotData['gubun'] != '남성')]
-    oldPlotVals = oldPlotData['criticalrate'].values.tolist()
-    oldGubunNames = oldPlotData['gubun'].values.tolist()
+   # 연령별 치명률 시각화 데이터
+    oldPlotVals = age_result_dict['age_value_list']
+    oldGubunNames = age_result_dict['age_key_list']
 
 
-    # 성별 치명률 시각화
-    genderPlotData = age_gender_df[['gubun', 'criticalrate']].groupby('gubun').mean()
-    genderPlotData = genderPlotData.reset_index()
-    genderPlotData.columns = ['gubun', 'criticalrate']
-    genderPlotData = genderPlotData.sort_values(by='criticalrate', ascending=False)
-    genderPlotData = genderPlotData.loc[(genderPlotData['gubun'] == '여성') | (genderPlotData['gubun'] == '남성')]
-    genderPlotVals = genderPlotData['criticalrate'].values.tolist()
-    genderGubunNames = genderPlotData['gubun'].values.tolist()
+    # 성별 치명률 시각화 데이터
+    genderPlotVals = gender_result_dict['gender_value_list']
+    genderGubunNames = gender_result_dict['gender_key_list']
 
     context = {'barPlotVals': barPlotVals, 'gubunNames': gubunNames,
                'lineChartVals': lineChartVals, 'dateTimes': dateTimes, 'oldPlotVals': oldPlotVals, 'oldGubunNames': oldGubunNames,

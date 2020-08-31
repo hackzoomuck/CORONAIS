@@ -43,6 +43,11 @@ class Infection_By_Age_Gender:
         assert cls.database
         return cls.database.find(_query)
 
+    def get_aggregate_users_from_collection(cls, _query):
+        assert cls.database
+        return cls.database.aggregate(_query)
+
+
     def add_user_on_collection(cls, _data):
         if type(_data) is list:
             return cls.database.insert_many(_data)
