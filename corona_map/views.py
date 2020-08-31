@@ -63,7 +63,7 @@ def infection_city_all_values():
 def infection_state_all_value():
     now = datetime.datetime.now()
     # 오늘 날짜 호출함.
-    nowDate = int(now.strftime('%Y%m%d'))-1
+    nowDate = int(now.strftime('%Y%m%d'))
     # 하루의 시도별 데이터
     infection_date_data = comong.Infection_Status().get_users_from_collection({'id': nowDate})
 

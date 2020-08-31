@@ -11,12 +11,15 @@ import corona_map.MongoDbManager as comong
 # 뉴스 기사 리스트조회
 def news_board(request):
     board_list = comong.News_Board().get_users_from_collection({})
+    #print(board_list,'나오냐---------------------------------------------')
+    for i in board_list:
+        print(i, '나오냐--------------------------')
     return render(request, 'news_board/news_board_list.html', {'board_list': board_list})
 
 
 # 뉴스 상세페이지 조회
-def news_board_detail(request, pk_id):
-    board_detail = comong.News_Board().get_users_one_from_collection({'pk_id': pk_id})
+def news_board_detail(request, id):
+    board_detail = comong.News_Board().get_users_one_from_collection({'id': id})
     return render(request, 'news_board/news_board_detail.html', {'board_detail': board_detail})
 
 
@@ -57,9 +60,9 @@ def news_board_list(request):
 
 # Ajax로 댓글 삽입
 def news_comment_insert(request):
-    pk_id = request.POST['pk_id']
+    id = request.POST['id']
     comment = request.POST['comment']
-    context = {'pk_id': pk_id, 'comment': comment}
+    context = {'id': id, 'comment': comment}
     result = comong.News_Board_Comment().add_user_on_collection(context)
     if result:
         status = 'success'
@@ -69,6 +72,6 @@ def news_comment_insert(request):
 
 
 # Ajax로 댓글 조회 불러오기
-def news_comment_list(request, pk_id):
-    comment_list = comong.News_Board_Comment().get_particular_users_from_collection({'pk_id': pk_id}, {'_id': 0})
+def news_comment_list(request, id):
+    comment_list = comong.News_Board_Comment().get_particular_users_from_collection({'id': id}, {'_id': 0})
     return HttpResponse(json.dumps(list(comment_list)), content_type='application/json')

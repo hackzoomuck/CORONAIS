@@ -39,7 +39,7 @@ function ajax_insert_comment(){
 function ajax_getCommentList(){
     $.ajax({
         type:'GET',
-        url: '{% url 'news-comment-list' pk_id=board_detail.pk_id%}',
+        url: '{% url 'news-comment-list' id=board_detail.id%}',
         dataType: 'json',
         //contentType: "application/x-www-form-urlencoded; charset=UTF-8",
         success: function(data){
@@ -52,7 +52,7 @@ function ajax_getCommentList(){
                     html += "<div>";
                     html +=     "<div>";
                     html +=         "<table class='table'>";
-                    html +=             "<h6><strong>" + data[i].pk_id + "</strong></h6>"
+                    html +=             "<h6><strong>" + data[i].id + "</strong></h6>"
                     html +=                 data[i].comment + "<tr><td></td></tr>";
                     html +=         "</table>";
                     html +=     "</div>";
@@ -129,7 +129,7 @@ function ajax_getCommentList(){
                 </table>
             </div>
         </div>
-        <input type="hidden" id="pk_id" name="pk_id" value="{{board_detail.pk_id}}" />
+        <input type="hidden" id="id" name="id" value="{{board_detail.id}}" />
     </form>
     </div>
 

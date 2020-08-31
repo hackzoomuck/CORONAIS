@@ -5,7 +5,7 @@
     {% for board in board_list %}
         <div class="post">
                 <h1><a href="#">{{board.title}}</a></h1>
-                <a href="{% url 'news-board-detail' pk_id=board.pk_id %}">{{board.content}}</a>
+                <a href="{% url 'news-board-detail' id=board.id %}">{{board.content}}</a>
                 <hr>
         </div>
         {% empty %}
