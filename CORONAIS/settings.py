@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corona_map',
     'news_board',
+    'seoul_map',
 ]
 
 MIDDLEWARE = [
@@ -81,9 +82,9 @@ DATABASES = {
         'ENGINE': 'djongo',
         'NAME': 'coronais', # DB명
         'USER': 'coronais', # 데이터베이스 계정
-        'PASSWORD':'coronais', # 계정 비밀번호
-        'HOST':'localhost', # 데이테베이스 IP
-        'PORT':'27017', # 데이터베이스 port
+        'PASSWORD': 'coronais', # 계정 비밀번호
+        'HOST': 'localhost', # 데이테베이스 IP
+        'PORT': '27017', # 데이터베이스 port
      }
 }
 
