@@ -22,8 +22,8 @@ from corona_map.Api.Gugun_status import get_seoul_data_list
 
 
 def call_gugun_info(request):
-    # init_gugun_data()
-    get_seoul_data_list()
+    init_gugun_data()
+    # get_seoul_data_list()
     return render(request, 'corona_map/gugun_info.html')
 
 # infection_city collection 에서 {시도, 확진자 수} 데이터 전처리 함수
@@ -77,7 +77,7 @@ def infection_state_all_value():
         item_dict['examcnt'] = idd['examcnt']
         # 사망자 수
         item_dict['deathcnt'] = idd['deathcnt']
-    print(item_dict)
+    print(item_dict, nowDate)
     return item_dict
 
 # 템플릿 적용
@@ -185,23 +185,35 @@ def cois_main(request):
 
 # 서울 지도
 def seoul(request):
+    # 중심위치 잡아서 지도보여주기 위한 변수 입력.
     m = folium.Map([37.562600, 126.991732], zoom_start=11)
 
+    # 서울시 구 별로 구분시켜주는 선을 그려주기 위해서 seoul_line.json 사용
     with open('corona_map/static/json_data/seoul_line.json', mode='rt', encoding='utf-8') as sl:
         geo = json.loads(sl.read())
         sl.close()
+    # 서울시 구 별 위도 경도 seoul_lati_longi.json 사용
+    with open('corona_map/static/json_data/seoul_lati_longi.json', mode='rt', encoding='utf-8') as sll:
+        seo_ll = json.loads(sll.read())
+        sll.close()
 
+    # get_seoul_data_list 데이터를 변수 seoul_list 에 저장
+    #seoul_list = get_seoul_data_list
+    seoul_list  = [{'gubunsmall': '동작구', 'defcnt': 9},{'gubunsmall': '영등포구', 'defcnt': 11}]
 
-    folium.Marker(
-        location=[37.5838699, 127.0565831],
-        popup='한국',
-        icon=folium.Icon(color='red', icon='star')
-    ).add_to(m)
+    for sll in seo_ll:
+    #for seoul_dict in seoul_list:
+
+        folium.Marker(
+            location=[float(sll['lat']), float(sll['lng'])],
+            popup=sll['sig_kor_nm'],
+            icon=folium.Icon(color='red', icon='star')
+        ).add_to(m)
+
     folium.GeoJson(
         geo,
         name='seoul_line'
     ).add_to(m)
-
     m = m._repr_html_()  # updated
     context = {'my_map': m}
     return render(request, 'corona_map/seoul.html', context)
