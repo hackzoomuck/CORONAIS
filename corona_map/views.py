@@ -500,6 +500,7 @@ def news_board_list(request):
     json_url_list = []
     json_data = json_text['DATA']
     word = '코로나'
+
     for json_url in json_data:
         title_url_dict = dict()
         title_url_dict['datetime'] = json_url['DATETIME']
@@ -507,6 +508,7 @@ def news_board_list(request):
             title_url_dict['url'] = urljoin(main_url, json_url['URL'])
             json_url_list.append(title_url_dict)
     gisa_result_list = []
+
     for corona_url in json_url_list:
         response = requests.get(corona_url['url'])
         html = response.text
