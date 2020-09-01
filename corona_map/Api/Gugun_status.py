@@ -487,8 +487,6 @@ def get_seoul_data_list() -> list:
             break
 
     return seoul_gus_data_list
-<<<<<<< HEAD
-=======
 
 def get_seoul_yesterday_data_list() -> list:
     print('서울 어제 데이터 꺼냄')
@@ -510,4 +508,4 @@ def get_seoul_yesterday_data_list() -> list:
 
     # print(seoul_gus_data_list)
     return seoul_gus_data_list
->>>>>>> 1a41b932d534186a8a073a3525b988b70ef87517
+
