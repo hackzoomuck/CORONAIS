@@ -216,9 +216,9 @@ def infection_city_gubun_defcnt():
 # infection_city_gubun_defcnt() 함수 사용
 def folium_page(request):
     # mongodb collection infection_city에 api request해서 데이터 저장.
-    print(Infection_city.infection_city())
-    print(News_board.news_board_list())
-    print(Infection_by_age_gender.infection_by_age_gender())
+    #print(Infection_city.infection_city())
+    #print(News_board.news_board_list())
+    #print(Infection_by_age_gender.infection_by_age_gender())
     print(Infection_status.infection_status())
 
 

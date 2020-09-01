@@ -9,6 +9,7 @@ import datetime
 
 # '보건복지부_코로나19시,도발생_현황 조회 서비스' api 데이터전처리함수
 def infection_city():
+    print('보건복지부_코로나19시,도발생_현황 조회 서비스 - 데이터 입력 중')
     # 수녕, 서율, 지은 apikey
     inf_serviceKey = ['67xjSd3vhpWMN4oQ3DztMgLyq4Aa1ugw1ssq%2FHeJAeniNIwyPspLp7XpNoa8mBbTJQPc3dAxqvtFm57fJIfq8w%3D%3D',
                       'hFxBvUwCFBcRvWK6wJdgZXgFmjnogBAgCMQ%2BWfZmCQngtc%2FkNb%2FvVqfS2ouV%2BxKMAbEbE94ZYhW3m6A3hxKyig%3D%3D',
@@ -29,6 +30,9 @@ def infection_city():
 
     if res.status_code == 200:
         html = res.text
+        if html is '':
+            return print('오늘 데이터가 업데이트 되지 않았습니다.')
+        print('html',html)
         soup = BeautifulSoup(html, 'html.parser')
         item_tag = soup.select('item')
         for item in item_tag:
@@ -55,8 +59,8 @@ def infection_city():
             date_string = item.find('createdt').string[:10].split('-')
             dateis = ''.join(date_string)
             item_dict['id'] = int(dateis)
-
+            print(item_dict)
             comong.Infection_City().add_user_on_collection(item_dict)
 
-
+        print('보건복지부_코로나19시,도발생_현황 조회 서비스 - 데이터 입력 완료')
         return "good infection_city.py"
