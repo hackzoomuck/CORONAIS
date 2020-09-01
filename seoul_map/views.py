@@ -1,10 +1,13 @@
 import json
 import folium
 from django.shortcuts import render
-from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list
+from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list, get_seoul_total_data_dict
 
 def seoul_main(request):
-    return render(request, 'seoul_map/index.html')
+    seoul_total_data = get_seoul_total_data_dict()
+    print(seoul_total_data)
+    context = {'defcnt':seoul_total_data['defcnt'], 'isolclearcnt':seoul_total_data['isolclearcnt'], 'isolingcnt':seoul_total_data['isolingcnt'], 'deathcnt':seoul_total_data['deathcnt']-1}
+    return render(request, 'seoul_map/index.html', context)
 
 # 서울 지도
 def seoul_map(request):
