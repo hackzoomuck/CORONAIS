@@ -84,6 +84,7 @@ class Infection_Status:
         assert cls.database
         return cls.database.find(_query[0], _query[1])
 
+
     def add_user_on_collection(cls, _data):
         if type(_data) is list:
             return cls.database.insert_many(_data)
