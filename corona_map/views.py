@@ -256,13 +256,13 @@ def infection_by_gender_all_value():
 
 # 템플릿 적용
 def cois_main(request):
-    # 총 확진자, 격리해제수, ... 구하기 위한 함수
+    # 총 확진자수, 격리해제수, 검사진행수, 사망자수 구하기 위한 함수
     in_st_dict = infection_state_all_value()
 
     # 지역별 코로나 총확진자 현황
     item_list_result = infection_city_all_values()
-    barPlotVals = item_list_result['i_city_all_key']
-    gubunNames = item_list_result['i_city_all_value']
+    gubunNames = item_list_result['i_city_all_key']
+    barPlotVals = item_list_result['i_city_all_value']
 
     # 지역별 코로나 일별확진자 현황
     item_city_oneday_result = infection_city_oneday_values()
