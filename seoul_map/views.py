@@ -1,16 +1,18 @@
 import json
 import folium
 from django.shortcuts import render
-from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list
+from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list, get_seoul_total_data_dict
 
 def seoul_main(request):
-    return render(request, 'seoul_map/index.html')
+    seoul_total_data = get_seoul_total_data_dict()
+    print(seoul_total_data)
+    context = {'defcnt':seoul_total_data['defcnt'], 'isolclearcnt':seoul_total_data['isolclearcnt'], 'isolingcnt':seoul_total_data['isolingcnt'], 'deathcnt':seoul_total_data['deathcnt']-1}
+    return render(request, 'seoul_map/index.html', context)
 
 # 서울 지도
 def seoul_map(request):
     # 중심위치 잡아서 지도보여주기 위한 변수 입력.
     m = folium.Map([37.562600, 126.991732], zoom_start=11)
-
     # 서울시 구 별로 구분시켜주는 선을 그려주기 위해서 seoul_line.json 사용
     with open('corona_map/static/json_data/seoul_line.json', mode='rt', encoding='utf-8') as sl:
         geo = json.loads(sl.read())
