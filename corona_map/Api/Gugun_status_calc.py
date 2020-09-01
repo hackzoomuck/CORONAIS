@@ -7,6 +7,7 @@ import corona_map.MongoDbManager as DBmanager
 def get_seoul_calc_data_dict() -> dict():
     print('서울 데이터 계산 시작')
     seoul_gu_data_list = Gugun_status.get_seoul_data_list()
+    #print(seoul_gu_data_list['stdday'])
     seoul_gu_yesterday_data_list = Gugun_status.get_seoul_yesterday_data_list()
 
     seoul_gu_calc_data_list = list()
@@ -27,6 +28,8 @@ def get_seoul_calc_data_dict() -> dict():
         'seoul': seoul_gu_calc_data_list,
         'stdday': int(datetime.datetime.now().strftime('%Y%m%d'))
     }
+
+    #print(seoul_calc_data_dict['stdday'])
     print('서울 데이터 계산 끝')
     return seoul_calc_data_dict
 

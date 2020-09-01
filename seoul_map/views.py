@@ -1,7 +1,7 @@
 import json
 import folium
 from django.shortcuts import render
-from corona_map.Api.Gugun_status import get_seoul_data_list
+from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list
 
 def seoul_main(request):
     return render(request, 'seoul_map/index.html')
@@ -20,9 +20,8 @@ def seoul_map(request):
         seo_ll = json.loads(sll.read())
         sll.close()
 
-    # get_seoul_data_list 데이터를 변수 seoul_list 에 저장
-    seoul_list = get_seoul_data_list()
-    print(seoul_list)
+    # get_seoul_yesterday_data_list 데이터를 변수 seoul_list 에 저장
+    seoul_list = get_seoul_calc_data_list()
     # seoul_list에 위도, 경도 추가된 데이터, seoul_data_add_lati_longi_list 변수에 저장
     seoul_data_add_lati_longi_list = []
     for gsl, gsll in zip(seoul_list, seo_ll):
@@ -32,7 +31,7 @@ def seoul_map(request):
 
     # popup 창에 seoul_data_add_lati_longi_list 데이터 저장
     for seoul_dict in seoul_data_add_lati_longi_list:
-        popup_info = '<h4>{}</h4> <h5>총 확진자 {}</h5><br><h5>격리중 환자수 {}</h5><br><h5>격리 해제 수 {}</h5><br><h5>사망자 수 {}</h5>'.format(seoul_dict['gubunsmall'], seoul_dict['defcnt'],seoul_dict['isolingcnt'],seoul_dict['isolclearcnt'],seoul_dict['deathcnt'])
+        popup_info = '<h4>{}</h4> <p>총 확진자 {}</p><p>격리중 환자수 {}&nbsp;오늘 확진자 수 {}</p><p>격리 해제 수 {}&nbsp;완치자 수 {}</p><p>사망자 수 {}</p>'.format(seoul_dict['gubunsmall'], seoul_dict['defcnt'],seoul_dict['isolingcnt'],seoul_dict['incdec'],seoul_dict['isolclearcnt'],seoul_dict['curedcnt'],seoul_dict['deathcnt'])
         folium.Marker(
             location=[float(seoul_dict['lat']), float(seoul_dict['lng'])],
             popup=folium.map.Popup(popup_info, max_width=200),
