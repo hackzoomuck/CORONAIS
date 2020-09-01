@@ -21,7 +21,7 @@ def infection_city():
         'serviceKey': SERVICE_KEY,
         'pageNo': 1,
         'numOfRows': 1,
-        'startCreateDt': nowDate-10,
+        'startCreateDt': nowDate,
         'endCreateDt': nowDate
     }
 

@@ -10,6 +10,8 @@ from corona_map.Api import Infection_city, Infection_status, Infection_by_age_ge
 import pymongo
 import datetime
 
+from corona_map.Api.Gugun_status import get_seoul_data_list, init_gugun_data
+
 
 import corona_map.MongoDbManager as comong
 from corona_map.Api.Infection_city import infection_city
@@ -81,6 +83,7 @@ def infection_state_all_value():
         item_dict['examcnt'] = idd['examcnt']
         # 사망자 수
         item_dict['deathcnt'] = idd['deathcnt']
+
     return item_dict
 
 
@@ -187,29 +190,6 @@ def cois_main(request):
 
     return render(request, 'corona_map/index.html', context)
 
-# 서울 지도
-def seoul(request):
-    m = folium.Map([37.562600, 126.991732], zoom_start=11)
-
-    with open('corona_map/static/json_data/seoul_line.json', mode='rt', encoding='utf-8') as sl:
-        geo = json.loads(sl.read())
-        sl.close()
-
-
-    folium.Marker(
-        location=[37.5838699, 127.0565831],
-        popup='한국',
-        icon=folium.Icon(color='red', icon='star')
-    ).add_to(m)
-    folium.GeoJson(
-        geo,
-        name='seoul_line'
-    ).add_to(m)
-
-    m = m._repr_html_()  # updated
-    context = {'my_map': m}
-    return render(request, 'corona_map/seoul.html', context)
-
 
 # infection_city collection 에서 {시도, 확진자 수} 데이터 전처리 함수
 def infection_city_gubun_defcnt():
@@ -235,7 +215,7 @@ def infection_city_gubun_defcnt():
 # infection_city_gubun_defcnt() 함수 사용
 def folium_page(request):
     # mongodb collection infection_city에 api request해서 데이터 저장.
-    # print(Infection_city.infection_city())
+    print(Infection_city.infection_city())
     # print(News_board.news_board_list())
     # print(Infection_by_age_gender.infection_by_age_gender())
     # print(Infection_status.infection_status())
