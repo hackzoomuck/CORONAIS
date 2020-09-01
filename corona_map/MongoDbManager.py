@@ -184,6 +184,10 @@ class Infection_Smallcity_Calc:
         assert cls.database
         return cls.database.find(_query[0], _query[1])
 
+    def get_gugun_status_all_data_from_collection(cls):
+        assert cls.database
+        return cls.database.find({},{'_id': 0})
+
     def add_gugun_status_datas_on_collection(cls, _data):
         if type(_data) is list:
             return cls.database.insert_many(_data)
