@@ -10,12 +10,6 @@ from corona_map.Api import Infection_city, Infection_status, Infection_by_age_ge
 import pymongo
 import datetime
 
-
-import corona_map.MongoDbManager as comong
-from corona_map.Api.Infection_city import infection_city
-from corona_map.Api.Infection_by_age_gender import infection_by_age_gender
-from corona_map.Api.Infection_status import infection_status
-
 from corona_map.Api.Gugun_status import get_seoul_data_list, init_gugun_data
 from corona_map.Api.data_init import seoul_data_init
 
@@ -34,7 +28,7 @@ def call_gugun_info(request):
 def infection_city_all_values():
     now = datetime.datetime.now()
     # 오늘 날짜 했는 데, 아직 시도별 api 데이터가 업데이트 되지 않아서 지난 날 것을 호출함.
-    nowDate = int(now.strftime('%Y%m%d'))-1
+    nowDate = int(now.strftime('%Y%m%d'))
     # 하루의 시도별 데이터
     infection_date_data = comong.Infection_City().get_users_from_collection({})
 
@@ -172,47 +166,6 @@ def cois_main(request):
 
     return render(request, 'corona_map/index.html', context)
 
-# 서울 지도
-def seoul(request):
-    # 중심위치 잡아서 지도보여주기 위한 변수 입력.
-    m = folium.Map([37.562600, 126.991732], zoom_start=11)
-
-    # 서울시 구 별로 구분시켜주는 선을 그려주기 위해서 seoul_line.json 사용
-    with open('corona_map/static/json_data/seoul_line.json', mode='rt', encoding='utf-8') as sl:
-        geo = json.loads(sl.read())
-        sl.close()
-    # 서울시 구 별 위도 경도 seoul_lati_longi.json 사용
-    with open('corona_map/static/json_data/seoul_lati_longi.json', mode='rt', encoding='utf-8') as sll:
-        seo_ll = json.loads(sll.read())
-        sll.close()
-
-    # get_seoul_data_list 데이터를 변수 seoul_list 에 저장
-    seoul_list = get_seoul_data_list()
-
-    # seoul_list에 위도, 경도 추가된 데이터, seoul_data_add_lati_longi_list 변수에 저장
-    seoul_data_add_lati_longi_list = []
-    for gsl, gsll in zip(seoul_list, seo_ll):
-        gsl["lng"] = gsll["lng"]
-        gsl["lat"] = gsll["lat"]
-        seoul_data_add_lati_longi_list.append(gsl)
-
-
-    for seoul_dict in seoul_data_add_lati_longi_list:
-        popup_info = '<h4>{}</h4> <h5>총 확진자 {}</h5><br><h5>격리중 환자수 {}</h5><br><h5>격리 해제 수 {}</h5><br><h5>사망자 수 {}</h5>'.format(seoul_dict['gubunsmall'], seoul_dict['defcnt'],seoul_dict['isolingcnt'],seoul_dict['isolclearcnt'],seoul_dict['deathcnt'])
-        folium.Marker(
-            location=[float(seoul_dict['lat']), float(seoul_dict['lng'])],
-            popup=folium.map.Popup(popup_info, max_width=200),
-            icon=folium.Icon(color='red', icon='star')
-        ).add_to(m)
-
-    folium.GeoJson(
-        geo,
-        name='seoul_line'
-    ).add_to(m)
-    m = m._repr_html_()  # updated
-    context = {'my_map': m}
-    return render(request, 'corona_map/seoul.html', context)
-
 
 # infection_city collection 에서 {시도, 확진자 수} 데이터 전처리 함수
 def infection_city_gubun_defcnt():
@@ -236,7 +189,7 @@ def infection_city_gubun_defcnt():
 # infection_city_gubun_defcnt() 함수 사용
 def folium_page(request):
     # mongodb collection infection_city에 api request해서 데이터 저장.
-    # print(Infection_city.infection_city())
+    print(Infection_city.infection_city())
     # print(News_board.news_board_list())
     # print(Infection_by_age_gender.infection_by_age_gender())
     # print(Infection_status.infection_status())
