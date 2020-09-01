@@ -215,12 +215,13 @@ def seoul(request):
 def infection_city_gubun_defcnt():
     now = datetime.datetime.now()
     # 오늘 날짜 했는 데, 아직 시도별 api 데이터가 업데이트 되지 않아서 지난 날 것을 호출함.
-    timestamp = now - datetime.timedelta(days=1)
+    timestamp = now - datetime.timedelta(days=2)
     nowDate = int(timestamp.strftime('%Y%m%d'))
+    # print(nowDate, 'nowDate나오냐')
 
     # 하루의 시도별 데이터
     infection_date_data = comong.Infection_City().get_users_from_collection({'id':nowDate})
-    print(infection_date_data)
+    # print(list(infection_date_data))
     gubun = []
     defcnt = []
     for idd in infection_date_data:
@@ -235,10 +236,10 @@ def infection_city_gubun_defcnt():
 # infection_city_gubun_defcnt() 함수 사용
 def folium_page(request):
     # mongodb collection infection_city에 api request해서 데이터 저장.
-    # print(Infection_city.infection_city())
-    # print(News_board.news_board_list())
-    # print(Infection_by_age_gender.infection_by_age_gender())
-    # print(Infection_status.infection_status())
+    print(Infection_city.infection_city())
+    print(News_board.news_board_list())
+    print(Infection_by_age_gender.infection_by_age_gender())
+    print(Infection_status.infection_status())
 
     soup_sido_data_list = infection_city_gubun_defcnt()
     geo_sido_data = 'corona_map/static/json_data/korea_sido.json'
