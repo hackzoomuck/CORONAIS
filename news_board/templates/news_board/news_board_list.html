@@ -1,10 +1,11 @@
 {% extends 'news_board/base.html' %}
 
 {% block content%}
-    <h1>코로나 뉴스</h1>
+    <h1>&nbsp&nbsp코로나 뉴스</h1>
+    <br>
     {% for board in board_list %}
         <div class="post">
-                <h1><a href="{% url 'news-board-detail' id=board.id %}">{{board.title}}</a></h1>
+                <h4>&nbsp&nbsp&nbsp&nbsp<a href="{% url 'news-board-detail' id=board.id %}">{{board.title}}</a></h4>
                 <hr>
         </div>
         {% empty %}
