@@ -301,6 +301,8 @@ def cois_main(request):
                'lineChartVals': lineChartVals, 'dateTimes': dateTimes, 'oldPlotVals': oldPlotVals, 'oldGubunNames': oldGubunNames,
                'genderPlotVals': genderPlotVals, 'genderGubunNames': genderGubunNames, 'decideCnt': in_st_dict['decidecnt'],'clearCnt': in_st_dict['clearcnt'],'examCnt': in_st_dict['examcnt'],'deathCnt': in_st_dict['deathcnt']}
 
+
+    print(dateTimes)
     return render(request, 'corona_map/index.html', context)
 
 
@@ -335,6 +337,11 @@ def folium_page(request):
     # print(Infection_status.infection_status())
 
 
+    # print(Infection_city.infection_city())
+    # print(News_board.news_board_list())
+    # print(Infection_by_age_gender.infection_by_age_gender())
+    # print(Infection_status.infection_status())
+
     soup_sido_data_list = infection_city_gubun_defcnt()
     geo_sido_data = 'corona_map/static/json_data/korea_sido.json'
     with open(geo_sido_data, "r", encoding="utf8") as f:
@@ -355,9 +362,9 @@ def folium_page(request):
         data_df = data_df.append(series_obj, ignore_index=True)
 
     # 보여주는 중심부의 위도, 경도
-    seoul_center = [35.5, 127.8]
+    seoul_center = [35.5, 132.0]
     # 맵이 center 에 위치하고, zoom 레벨은 7로 시작하는 맵 m
-    m = folium.Map(location=seoul_center, zoom_start=6, width='100%', height='100%')
+    m = folium.Map(location=seoul_center, zoom_start=7, width='100%', height='100%')
 
     # Choropleth 레이어를 만들고, 맵 m에 추가
     folium.Choropleth(
@@ -386,7 +393,7 @@ def folium_page(request):
                        {'시':'인천','위도':37.45,'경도':126.70,'링크':'"https://www.incheon.go.kr/health/HE020409"'},\
                        {'시':'대구','위도':35.87,'경도':128.60,'링크':'"http://covid19.daegu.go.kr/"'},\
                        {'시':'부산','위도':35.18,'경도':129.07,'링크':'"http://www.busan.go.kr/covid19/Corona19.do"'},\
-                       {'시':'서울','위도':37.56,'경도':126.97,'링크':'"http://127.0.0.1:8000/seoul/"'}]
+                       {'시':'서울','위도':37.56,'경도':126.97,'링크':'"http://127.0.0.1:8000/seoul-main/"'}]
 
 
     for si_ma in sido_lati_longi:
@@ -402,6 +409,7 @@ def folium_page(request):
 
 
 def coIs_home(request):
+    '''
     # 수녕, 서율, 지은
     sido_serviceKey = ['0',
                        'BjW9a8K51p0oRJ0hl%2BBpizJzZ9gT3e%2Beb75QhG9kXdeK9ENW7CCAl9nX28%2BRD97JlAsDrTv7StIwvUPCxA4iTw%3D%3D',
@@ -453,7 +461,8 @@ def coIs_home(request):
     # for a in item_list_result:
     #     a_object = pd.Series(a)
     #     item_df = item_df.append(a_object, ignore_index=True)
-    return render(request, 'corona_map/coIs_home.html', {'soup_data': item_list_result})
+    '''
+    return render(request, 'corona_map/coIs_home.html')
 
 def chart_bar(request):
     # 수녕, 서율, 지은
@@ -609,6 +618,7 @@ def news_board_list(request):
     json_url_list = []
     json_data = json_text['DATA']
     word = '코로나'
+
     for json_url in json_data:
         title_url_dict = dict()
         title_url_dict['datetime'] = json_url['DATETIME']
@@ -616,6 +626,7 @@ def news_board_list(request):
             title_url_dict['url'] = urljoin(main_url, json_url['URL'])
             json_url_list.append(title_url_dict)
     gisa_result_list = []
+
     for corona_url in json_url_list:
         response = requests.get(corona_url['url'])
         html = response.text

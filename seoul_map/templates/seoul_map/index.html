@@ -1,13 +1,91 @@
 {% extends 'seoul_map/base.html' %}
 
 {% block content%}
-    <h1>서울페이지</h1>
+{% load static %}
+<script src="{% static 'js/Chart.min.js' %}"></script>
+<script src="{% static 'js/utils.js' %}"></script>
+<script>
+
+    // 일별 확진자추이 line-chart
+    var config = {
+        type: 'line',
+        data: {
+            labels: {{datetime_list|safe}},
+            datasets: [{
+                label: '인원 (명)',
+                backgroundColor: window.chartColors.red,
+                borderColor: window.chartColors.red,
+                data: {{daily_incdec_list|safe}},
+                fill: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: false
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    display: true
+                }],
+                yAxes: [{
+                    display: true
+                }]
+            }
+        }
+    };
+
+    //시도별 확진자추이 bar-chart
+    var color = Chart.helpers.color;
+    var barChartData = {
+        labels: {{area_list|safe}},
+        datasets: [{
+            label: '인원 (명)',
+            backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+            borderColor: window.chartColors.red,
+            borderWidth: 1,
+            data: {{area_daily_incdec_list|safe}}
+        }]
+
+    };
+
+    window.onload = function() {
+        var ctx = document.getElementById('line-chart').getContext('2d');
+        window.myLine = new Chart(ctx, config);
+
+        var ctx = document.getElementById('bar-chart').getContext('2d');
+        window.myBar = new Chart(ctx, {
+            type: 'bar',
+            data: barChartData,
+            options: {
+                responsive: true,
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: false
+                },
+            }
+        });
+    };
+</script>
+
+
+
     <!-- Begin Page Content -->
         <div class="container-fluid">
 
           <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+            <h1 class="h3 mb-0 text-gray-800">서울시 현황</h1>
           </div>
 
           <!-- Content Row -->
@@ -19,11 +97,8 @@
                 <div class="card-body">
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                      <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">확진자 수</div>
-                      <div class="h5 mb-0 font-weight-bold text-gray-800">{{ decideCnt }}</div>
-                    </div>
-                    <div class="col-auto">
-                      <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                      <div class="font-size:100px font-weight-bold text-primary text-uppercase mb-1">확진자 수</div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">{{ defcnt }}</div>
                     </div>
                   </div>
                 </div>
@@ -36,11 +111,8 @@
                 <div class="card-body">
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                      <div class="text-xs font-weight-bold text-success text-uppercase mb-1">격리해제 수(완치자 수)</div>
-                      <div class="h5 mb-0 font-weight-bold text-gray-800">{{clearCnt}}</div>
-                    </div>
-                    <div class="col-auto">
-                      <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                      <div class="font-size:100px font-weight-bold text-success text-uppercase mb-1">격리해제 수(완치자 수)</div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">{{isolclearcnt}}</div>
                     </div>
                   </div>
                 </div>
@@ -53,20 +125,12 @@
                 <div class="card-body">
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                      <div class="text-xs font-weight-bold text-info text-uppercase mb-1">검사진행 수</div>
+                      <div class="font-size:100px font-weight-bold text-info text-uppercase mb-1">검사진행 수</div>
                       <div class="row no-gutters align-items-center">
                         <div class="col-auto">
-                          <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{examCnt}}</div>
-                        </div>
-                        <div class="col">
-                          <div class="progress progress-sm mr-2">
-                            <div class="progress-bar bg-info" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
+                          <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{isolingcnt}}</div>
                         </div>
                       </div>
-                    </div>
-                    <div class="col-auto">
-                      <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
                     </div>
                   </div>
                 </div>
@@ -79,11 +143,8 @@
                 <div class="card-body">
                   <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                      <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">사망자 수</div>
-                      <div class="h5 mb-0 font-weight-bold text-gray-800">{{ deathCnt }}</div>
-                    </div>
-                    <div class="col-auto">
-                      <i class="fas fa-comments fa-2x text-gray-300"></i>
+                      <div class="font-size:100px font-weight-bold text-warning text-uppercase mb-1">사망자 수</div>
+                      <div class="h5 mb-0 font-weight-bold text-gray-800">{{ deathcnt }}</div>
                     </div>
                   </div>
                 </div>
@@ -93,13 +154,10 @@
 
           <!-- Content Row -->
 
-          <div class="row">
 
-            <!-- Area Chart -->
             <div class="row">
-
             <!-- Area Chart -->
-            <div class="col-xl-6 col-lg-6">
+            <div class="col-xl-12 col-lg-12">
               <div class="card shadow mb-4">
                 <!-- Card Header - Dropdown -->
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -112,14 +170,20 @@
                 </div>
                 <!-- Card Body -->
                 <div class="card-body" >
-                  <div class="chart-area" style="padding: 0">
-                      <!-- 여기가 서울 지도 -->
+                  <div class="chart-area" style="padding: 0; height: 700px" >
+                      <!-- 여기가 한국 전국 지도 -->
                       <iframe width="100%" height="100%" src="../seoul-map" id="append-folium" frameborder="0" scrolling="no" style="-webkit-transform:scale(1);-moz-transform-scale(1);">지원하지 않는 브라우저 입니다.</iframe>
                     <canvas id="korea-map"></canvas>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+
+
+
+
+            <div class="row">
 
             <!-- Line Chart -->
             <div class="col-xl-6 col-lg-6">
@@ -135,61 +199,16 @@
                 </div>
                 <!-- Card Body -->
                 <div class="card-body">
-                  <div class="chart-area">
-                    <canvas id="line-chart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                  <div class="chart-area" style="height:fit-content ;">
+                    <canvas id="line-chart">
 
-            <!-- Line Chart -->
-            <div class="col-xl-6 col-lg-6">
-              <div class="card shadow mb-4">
-                <!-- Card Header - Dropdown -->
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                  <h6 class="m-0 font-weight-bold text-primary">일별 확진자 추이</h6>
-                  <div class="dropdown no-arrow">
-                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                    </a>
-                  </div>
-                </div>
-                <!-- Card Body -->
-                <div class="card-body">
-                  <div class="chart-area">
-                    <canvas id="line-chart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Content Row -->
-          <div class="row">
-
-            <!-- Content Column -->
-            <div class="col-lg-6 mb-4">
-              <!-- Project Card Example -->
-              <div class="card shadow mb-4">
-                <!-- Card Header - Dropdown -->
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                  <h6 class="m-0 font-weight-bold text-primary">Test</h6>
-                </div>
-                <!-- Card Body -->
-                <div class="card-body">
-                  <div class="chart-area">
-                    <div id="canvas-holder" style="width:100%">
-                        <canvas id="pie-chart"></canvas>
-                    </div>
-                      {% comment %}<iframe src="{% url 'by-age-gender' %}" width="100%" height="400px" frameborder="0" marginwidth="0" marginheight="0"></iframe>{% endcomment %}
+                    </canvas>
                   </div>
                 </div>
               </div>
             </div>
 
-
-            <div class="col-lg-6 mb-4">
+            <div class="col-lg-6 mb-6">
               <!-- Project Card Example -->
               <div class="card shadow mb-4">
                 <!-- Card Header - Dropdown -->
@@ -198,31 +217,21 @@
                 </div>
                 <!-- Card Body -->
                 <div class="card-body">
-                  <div class="chart-area">
-                    <canvas id="bar-chart"></canvas>
+                  <div class="chart-area" style="height:fit-content ;">
+                    <canvas id="bar-chart">
+
+                    </canvas>
                   </div>
                 </div>
               </div>
             </div>
 
-              <!-- Approach -->
-              <!-- Content Column -->
-            <div class="col-lg-6 mb-4">
-              <!-- Project Card Example -->
-              <div class="card shadow mb-4">
-                <!-- Card Header - Dropdown -->
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                  <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
-                </div>
-                <!-- Card Body -->
-                <div class="card-body">
-                  <div class="chart-area">
-                    <canvas id="old-bar-chart"></canvas>
-                  </div>
-                </div>
-              </div>
-            </div>
+
           </div>
-        </div>
+
+
+
+      </div>
+      <!-- End of Main Content -->
 
 {% endblock %}

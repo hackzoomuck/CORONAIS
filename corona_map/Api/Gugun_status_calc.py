@@ -7,6 +7,7 @@ import corona_map.MongoDbManager as DBmanager
 def get_seoul_calc_data_dict() -> dict():
     print('서울 데이터 계산 시작')
     seoul_gu_data_list = Gugun_status.get_seoul_data_list()
+    #print(seoul_gu_data_list['stdday'])
     seoul_gu_yesterday_data_list = Gugun_status.get_seoul_yesterday_data_list()
 
     seoul_gu_calc_data_list = list()
@@ -27,6 +28,8 @@ def get_seoul_calc_data_dict() -> dict():
         'seoul': seoul_gu_calc_data_list,
         'stdday': int(datetime.datetime.now().strftime('%Y%m%d'))
     }
+
+    #print(seoul_calc_data_dict['stdday'])
     print('서울 데이터 계산 끝')
     return seoul_calc_data_dict
 
@@ -54,4 +57,35 @@ def get_seoul_calc_data_list() -> list:
             seoul_gus_data_list = obj_dict['seoul']
             break
 
-    return seoul_gus_data_list
+    return list(seoul_gus_data_list)    
+
+def get_seoul_total_data_dict() -> dict:
+    print('hahaha')
+    seoul_total = get_seoul_calc_data_list()
+    seoul_total_dict = {'defcnt':0,'isolingcnt':0,'isolclearcnt':0,'deathcnt':0}
+    for seoul_gugun in seoul_total:
+        seoul_total_dict['defcnt'] += seoul_gugun['defcnt']
+        seoul_total_dict['isolingcnt'] += seoul_gugun['isolingcnt']
+        seoul_total_dict['isolclearcnt'] += seoul_gugun['isolclearcnt']
+        seoul_total_dict['deathcnt'] += seoul_gugun['deathcnt']
+
+    return seoul_total_dict
+  
+def get_seoul_calc_all_data_list() -> list:
+    cursor_obj = DBmanager.Infection_Smallcity_Calc().get_gugun_status_all_data_from_collection()
+    return list(cursor_obj)
+
+def get_daily_incdec_list() -> list:
+    seoul_all_data_list = get_seoul_calc_all_data_list()
+    seoul_daily_data_list = list()
+    for gu_data in seoul_all_data_list:
+        seoul_daily_data_dict = dict()
+        seoul_daily_data_dict['stdday'] = gu_data['stdday']
+        seoul_daily_data_dict['incdec'] = 0
+
+        for gu_dict in gu_data['seoul']:
+            seoul_daily_data_dict['incdec'] += gu_dict['incdec']
+
+        seoul_daily_data_list.append(seoul_daily_data_dict)
+
+    return seoul_daily_data_list
