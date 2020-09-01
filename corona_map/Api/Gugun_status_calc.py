@@ -57,4 +57,28 @@ def get_seoul_calc_data_list() -> list:
             seoul_gus_data_list = obj_dict['seoul']
             break
 
-    return seoul_gus_data_list
+    return list(seoul_gus_data_list)
+
+def get_seoul_calc_all_data_list() -> list:
+    cursor_obj = DBmanager.Infection_Smallcity_Calc().get_gugun_status_all_data_from_collection()
+    return list(cursor_obj)
+
+def get_daily_incdec_list() -> list:
+    seoul_all_data_list = get_seoul_calc_all_data_list()
+    seoul_daily_data_list = list()
+    for gu_data in seoul_all_data_list:
+        seoul_daily_data_dict = dict()
+        seoul_daily_data_dict['stdday'] = gu_data['stdday']
+        seoul_daily_data_dict['incdec'] = 0
+
+        for gu_dict in gu_data['seoul']:
+            seoul_daily_data_dict['incdec'] += gu_dict['incdec']
+
+        seoul_daily_data_list.append(seoul_daily_data_dict)
+
+    return seoul_daily_data_list
+
+
+
+
+

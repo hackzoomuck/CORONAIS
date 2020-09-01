@@ -9,7 +9,7 @@
   <meta name="description" content="">
   <meta name="author" content="">
 
-  <title>SB Admin 2 - Dashboard</title>
+  <title>CORONAIS - 코로나 현황</title>
   {% load static %}
   <!-- Custom fonts for this template-->
   <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
@@ -29,7 +29,7 @@
         data: {
             labels: {{dateTimes|safe}},
             datasets: [{
-                label: 'My First dataset',
+                label: '인원 (명)',
                 backgroundColor: window.chartColors.red,
                 borderColor: window.chartColors.red,
                 data: {{lineChartVals|safe}},
@@ -40,7 +40,7 @@
             responsive: true,
             title: {
                 display: true,
-                text: 'Chart.js Line Chart'
+                text: ''
             },
             tooltips: {
                 mode: 'index',
@@ -74,7 +74,7 @@
     var barChartData = {
         labels: {{gubunNames|safe}},
         datasets: [{
-            label: '시도별 확진자 추이',
+            label: '인원 (명)',
             backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
             borderColor: window.chartColors.red,
             borderWidth: 1,
@@ -134,7 +134,7 @@
                 },
                 title: {
                     display: true,
-                    text: '연령별 치명률 차트'
+                    text: ''
                 }
             }
         });
@@ -150,7 +150,7 @@
                 },
                 title: {
                     display: true,
-                    text: '지역별 확진자 추이'
+                    text: ''
                 },
             }
         });

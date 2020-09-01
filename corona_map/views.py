@@ -188,6 +188,8 @@ def cois_main(request):
                'lineChartVals': lineChartVals, 'dateTimes': dateTimes, 'oldPlotVals': oldPlotVals, 'oldGubunNames': oldGubunNames,
                'genderPlotVals': genderPlotVals, 'genderGubunNames': genderGubunNames, 'decideCnt': in_st_dict['decidecnt'],'clearCnt': in_st_dict['clearcnt'],'examCnt': in_st_dict['examcnt'],'deathCnt': in_st_dict['deathcnt']}
 
+
+    print(dateTimes)
     return render(request, 'corona_map/index.html', context)
 
 
