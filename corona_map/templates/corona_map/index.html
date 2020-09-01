@@ -8,9 +8,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="">
   <meta name="author" content="">
-
-  <title>CORONAIS</title>
-
+  <title>CORONAIS - 코로나 현황</title>
+  
   {% load static %}
   <link rel="shortcut icon" href="{%static 'favicon.ico'%}">
   <!-- Custom fonts for this template-->
@@ -31,7 +30,7 @@
         data: {
             labels: {{dateTimes|safe}},
             datasets: [{
-                label: 'My First dataset',
+                label: '인원 (명)',
                 backgroundColor: window.chartColors.red,
                 borderColor: window.chartColors.red,
                 data: {{lineChartVals|safe}},
@@ -42,7 +41,7 @@
             responsive: true,
             title: {
                 display: true,
-                text: 'Chart.js Line Chart'
+                text: ''
             },
             tooltips: {
                 mode: 'index',
@@ -76,7 +75,7 @@
     var barChartData = {
         labels: {{gubunNames|safe}},
         datasets: [{
-            label: '시도별 확진자 추이',
+            label: '인원 (명)',
             backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
             borderColor: window.chartColors.red,
             borderWidth: 1,
@@ -136,7 +135,7 @@
                 },
                 title: {
                     display: true,
-                    text: '연령별 치명률 차트'
+                    text: ''
                 }
             }
         });
@@ -152,7 +151,7 @@
                 },
                 title: {
                     display: true,
-                    text: '지역별 확진자 추이'
+                    text: ''
                 },
             }
         });
@@ -173,7 +172,7 @@
         <div class="sidebar-brand-icon rotate-n-15">
           <i class="fas fa-laugh-wink"></i>
         </div>
-        <div class="sidebar-brand-text mx-3">CORONA <sup>IS</sup></div>
+        <div class="sidebar-brand-text mx-3">CORONA<sup>IS</sup></div>
       </a>
 
       <!-- Divider -->
@@ -263,7 +262,7 @@
 
           <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+            <h1 class="h3 mb-0 text-gray-800">코로나 전국 현황</h1>
           </div>
 
           <!-- Content Row -->

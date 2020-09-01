@@ -1,11 +1,39 @@
 import json
 import folium
 from django.shortcuts import render
-from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list, get_seoul_total_data_dict
+from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list, get_daily_incdec_list, get_seoul_total_data_dict
 
 def seoul_main(request):
     seoul_total_data = get_seoul_total_data_dict()
-    context = {'defcnt':seoul_total_data['defcnt'], 'isolclearcnt':seoul_total_data['isolclearcnt'], 'isolingcnt':seoul_total_data['isolingcnt'], 'deathcnt':seoul_total_data['deathcnt']-1}
+    daily_gu_all_data_list = get_daily_incdec_list()
+    datetime_list = list()
+    daily_incdec_list = list()
+
+    for data in daily_gu_all_data_list:
+        datetime_list.append(data['stdday'])
+        daily_incdec_list.append(data['incdec'])
+
+    daily_gu_data_list = list(get_seoul_calc_data_list())
+    area_list = list()
+    area_daily_incdec_list = list()
+
+    for data in daily_gu_data_list:
+        # print(data)
+        area_list.append(data['gubunsmall'])
+        area_daily_incdec_list.append(data['incdec'])
+        
+    context = {
+        'datetime_list':datetime_list,
+        'daily_incdec_list':daily_incdec_list,
+        'area_list':area_list,
+        'area_daily_incdec_list':area_daily_incdec_list,
+      
+        'defcnt':seoul_total_data['defcnt'],
+        'isolclearcnt':seoul_total_data['isolclearcnt'],
+        'isolingcnt':seoul_total_data['isolingcnt'],
+        'deathcnt':seoul_total_data['deathcnt']-1
+    }   
+    
     return render(request, 'seoul_map/index.html', context)
 
 # 서울 지도
