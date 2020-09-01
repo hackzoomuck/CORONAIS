@@ -28,7 +28,10 @@ urlpatterns = [
     path('gugun-info/', views.call_gugun_info ,name='gugun-info'),
 
     # data 등록
-    path('data-init/', views.call_data_init, name='data-init')
+    path('data-init/', views.call_data_init, name='data-init'),
+
+    # data test : 수녕
+    # path('cois-test/', views.infection_by_age_gender_all_value, name='cois-test'),
 
 
     # loacalhost:8080/board-list : 코로나 뉴스게시판 리스트 페이지

@@ -149,12 +149,6 @@ def crawling_seoul_gu_state_dict(gugun_info_dict) -> dict:
         else:
             death_cnt_int = -1
 
-    # print('도시명: {}'.format(gugun_name))
-    # print('누적 확진자: {}'.format(def_cnt_int))
-    # print('현재 확진자: {}'.format(isol_ing_cnt_int))
-    # print('누적 완치자: {}'.format(isol_clear_cnt_int))
-    # print('사망자: {}'.format(death_cnt_int))
-    
     # 종합 데이터 dict 리턴
     gugun_data_dict = {
         'gubunsmall': gugun_name,
@@ -449,7 +443,7 @@ def get_seoul_info_dict() -> dict:
     gugun_url = 'http://www.gangnam.go.kr/etc/json/covid19.json'
     gugun_name = '강남구'
     res = requests.get(gugun_url)
-    def_cnt_int = res.json()['status']['counter8']
+    def_cnt_int = int(res.json()['status']['counter8'])
 
     gangnam_data_from_json_dict = {
         'gubunsmall': gugun_name,
@@ -493,3 +487,27 @@ def get_seoul_data_list() -> list:
             break
 
     return seoul_gus_data_list
+<<<<<<< HEAD
+=======
+
+def get_seoul_yesterday_data_list() -> list:
+    print('서울 어제 데이터 꺼냄')
+    timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
+    find_date = int(timestamp.strftime('%Y%m%d'))
+    sql_query_0 = {'stdday': find_date}
+    sql_query_1 = {'_id': 0}
+
+    cursor_obj = DBmanager.Infection_Smallcity().get_gugun_status_datas_from_collection(sql_query_0, sql_query_1)
+
+    cursor_objs_list = list(cursor_obj)
+    print(cursor_objs_list)
+    seoul_gus_data_list = list()
+
+    for obj_dict in cursor_objs_list:
+        if obj_dict.get('seoul'):
+            seoul_gus_data_list = obj_dict['seoul']
+            break
+
+    # print(seoul_gus_data_list)
+    return seoul_gus_data_list
+>>>>>>> 1a41b932d534186a8a073a3525b988b70ef87517

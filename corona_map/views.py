@@ -11,8 +11,15 @@ import pymongo
 import datetime
 
 from corona_map.Api.Gugun_status import get_seoul_data_list, init_gugun_data
-from corona_map.Api.data_init import seoul_data_init
 
+
+import corona_map.MongoDbManager as comong
+from corona_map.Api.Infection_city import infection_city
+from corona_map.Api.Infection_by_age_gender import infection_by_age_gender
+from corona_map.Api.Infection_status import infection_status
+
+from corona_map.Api.data_init import seoul_data_init
+from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list
 
 def call_data_init(request):
     seoul_data_init()
@@ -20,8 +27,8 @@ def call_data_init(request):
 
 
 def call_gugun_info(request):
-    get_seoul_data_list() # Gugun_status_calc 에서 가져오는 가공데이터로 변경 예정
-    return render(request, 'corona_map/coIs_home.html', {'soup_data': 'call_gugun_info에서 넘어옴'})
+    data = get_seoul_calc_data_list()
+    return render(request, 'corona_map/coIs_home.html', {'soup_data': data})
 
 
 # infection_city collection 에서 {시도, 확진자 수} 데이터 전처리 함수
@@ -80,27 +87,57 @@ def infection_state_all_value():
     return item_dict
 
 
-def infection_by_age_gender_all_value():
-    infection_date_data = comong.Infection_By_Age_Gender().get_users_from_collection({})
-    infection_by_age_gender_all_value_list = []
-    for idd in infection_date_data:
-        item_dict = {}
-        # 확진자
-        item_dict['confcase'] = idd['confcase']
-        # 확진률
-        item_dict['confcaserate'] = idd['confcaserate']
-        # 등록일시분초
-        item_dict['createdt'] = idd['createdt']
-        # 치명률
-        item_dict['criticalrate'] = idd['criticalrate']
-        # 사망자
-        item_dict['death'] = idd['death']
-        # 사망률
-        item_dict['deathrate'] = idd['deathrate']
-        # 구분(성별,연령별)0-9
-        item_dict['gubun'] = idd['gubun']
-        infection_by_age_gender_all_value_list.append(item_dict)
-    return infection_by_age_gender_all_value_list
+def infection_by_age_all_value():
+    infection_date_data = comong.Infection_By_Age_Gender().get_aggregate_users_from_collection(
+        [
+            {'$match': {'$and': [{'gubun': {'$not': {'$regex': '여성'}}}, {'gubun': {'$not': {'$regex': '남성'}}}]}},
+            {'$group': {'_id': '$gubun', 'mean_criticalrate': {'$sum': '$criticalrate'}}},
+            {'$sort': {'mean_criticalrate': -1}},
+            {
+                '$project': {
+                    'gubun': '$_id',
+                    'mean_criticalrate': 1,
+                    '_id': 0
+                }
+            }
+        ]
+    )
+    infection_by_age_all_value_list = list(infection_date_data)
+    age_key_list = []
+    age_value_list = []
+    for infection_by_age_all_value_dict in infection_by_age_all_value_list:
+        age_key_list.append(infection_by_age_all_value_dict['gubun'])
+        age_value_list.append(infection_by_age_all_value_dict['mean_criticalrate'])
+
+    context = {'age_key_list': age_key_list, 'age_value_list': age_value_list}
+
+    return context
+
+
+def infection_by_gender_all_value():
+    infection_date_data = comong.Infection_By_Age_Gender().get_aggregate_users_from_collection(
+        [
+            {'$match': {'$or': [{'gubun': {'$regex': '여성'}}, {'gubun': {'$regex': '남성'}}]}},
+            {'$group': {'_id': '$gubun', 'mean_criticalrate': {'$sum': '$criticalrate'}}},
+            {'$sort': {'mean_criticalrate': -1}},
+            {
+                '$project': {
+                    'gubun': '$_id',
+                    'mean_criticalrate': 1,
+                    '_id': 0
+                }
+            }
+        ]
+    )
+    infection_by_gender_all_value_list = list(infection_date_data)
+    age_key_list = []
+    age_value_list = []
+    for infection_by_age_all_value_dict in infection_by_gender_all_value_list:
+        age_key_list.append(infection_by_age_all_value_dict['gubun'])
+        age_value_list.append(infection_by_age_all_value_dict['mean_criticalrate'])
+
+    context = {'gender_key_list': age_key_list, 'gender_value_list': age_value_list}
+    return context
 
 
 # 템플릿 적용
@@ -133,32 +170,19 @@ def cois_main(request):
 
     ##################################################################################
     # 성별, 연령별
-    age_gender_list_result = infection_by_age_gender_all_value()
-    age_gender_df = pd.DataFrame(
-        columns=['confcase', 'confcaserate', 'createdt', 'criticalrate', 'death', 'deathrate', 'gubun'])
-    for a in age_gender_list_result:
-        a_object = pd.Series(a)
-        age_gender_df = age_gender_df.append(a_object, ignore_index=True)
-    ##################################################################################
+    # 연령별 데이터 가져오기
+    age_result_dict = infection_by_age_all_value()
+    # 성별 데이터 가져오기
+    gender_result_dict = infection_by_gender_all_value()
 
-    # 연령별 치명률 시각화
-    oldPlotData = age_gender_df[['gubun', 'criticalrate']].groupby('gubun').mean()
-    oldPlotData = oldPlotData.reset_index()
-    oldPlotData.columns = ['gubun', 'criticalrate']
-    oldPlotData = oldPlotData.sort_values(by='criticalrate', ascending=False)
-    oldPlotData = oldPlotData.loc[(oldPlotData['gubun'] != '여성') & (oldPlotData['gubun'] != '남성')]
-    oldPlotVals = oldPlotData['criticalrate'].values.tolist()
-    oldGubunNames = oldPlotData['gubun'].values.tolist()
+   # 연령별 치명률 시각화 데이터
+    oldPlotVals = age_result_dict['age_value_list']
+    oldGubunNames = age_result_dict['age_key_list']
 
 
-    # 성별 치명률 시각화
-    genderPlotData = age_gender_df[['gubun', 'criticalrate']].groupby('gubun').mean()
-    genderPlotData = genderPlotData.reset_index()
-    genderPlotData.columns = ['gubun', 'criticalrate']
-    genderPlotData = genderPlotData.sort_values(by='criticalrate', ascending=False)
-    genderPlotData = genderPlotData.loc[(genderPlotData['gubun'] == '여성') | (genderPlotData['gubun'] == '남성')]
-    genderPlotVals = genderPlotData['criticalrate'].values.tolist()
-    genderGubunNames = genderPlotData['gubun'].values.tolist()
+    # 성별 치명률 시각화 데이터
+    genderPlotVals = gender_result_dict['gender_value_list']
+    genderGubunNames = gender_result_dict['gender_key_list']
 
     context = {'barPlotVals': barPlotVals, 'gubunNames': gubunNames,
                'lineChartVals': lineChartVals, 'dateTimes': dateTimes, 'oldPlotVals': oldPlotVals, 'oldGubunNames': oldGubunNames,
@@ -171,17 +195,19 @@ def cois_main(request):
 def infection_city_gubun_defcnt():
     now = datetime.datetime.now()
     # 오늘 날짜 했는 데, 아직 시도별 api 데이터가 업데이트 되지 않아서 지난 날 것을 호출함.
-    nowDate = int(now.strftime('%Y%m%d'))
+    timestamp = now - datetime.timedelta(days=1)
+    nowDate = int(timestamp.strftime('%Y%m%d'))
+
     # 하루의 시도별 데이터
     infection_date_data = comong.Infection_City().get_users_from_collection({'id':nowDate})
-
+    print(infection_date_data)
     gubun = []
     defcnt = []
     for idd in infection_date_data:
         gubun.append(idd['gubun'])
         defcnt.append(idd['defcnt'])
     # {시도:확진자 수}
-    dict_gubun_defcnt = dict(zip(gubun,defcnt))
+    dict_gubun_defcnt = dict(zip(gubun, defcnt))
     return dict_gubun_defcnt
 
 
