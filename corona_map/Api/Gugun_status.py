@@ -230,9 +230,9 @@ def get_seoul_info_dict() -> dict:
     city_data_dict = {
         'gugun_url': 'http://www.sd.go.kr/sd/intro.do',
         'gugun_name': '성동구',
-        'isol_clear_cnt_tag': '.top_box .top_area1 .status_list .alone .stat_title',
+        'isol_clear_cnt_tag': '.top_box .top_area1 .status_list .stat_txt:nth-last-child(2) em',
         'sub_isol_clear_cnt_tag': '',
-        'def_cnt_tag': '.top_box .top_area1 .status_list .stat_txt:nth-last-child(1) em',
+        'def_cnt_tag': '.top_box .top_area1 .status_list .alone .stat_title',
         'isol_ing_cnt_tag': '.top_box .top_area1 .status_list .stat_txt.first_txt em'
     }
     cities_data_list.append(city_data_dict)
