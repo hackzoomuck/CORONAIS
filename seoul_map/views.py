@@ -1,9 +1,10 @@
 import json
 import folium
 from django.shortcuts import render
-from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list, get_daily_incdec_list
+from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list, get_daily_incdec_list, get_seoul_total_data_dict
 
 def seoul_main(request):
+    seoul_total_data = get_seoul_total_data_dict()
     daily_gu_all_data_list = get_daily_incdec_list()
 
     datetime_list = list()
@@ -30,9 +31,13 @@ def seoul_main(request):
         'datetime_list':datetime_list,
         'daily_incdec_list':daily_incdec_list,
         'area_list':area_list,
-        'area_daily_incdec_list':area_daily_incdec_list
-    }
-
+        'area_daily_incdec_list':area_daily_incdec_list,
+      
+        'defcnt':seoul_total_data['defcnt'],
+        'isolclearcnt':seoul_total_data['isolclearcnt'],
+        'isolingcnt':seoul_total_data['isolingcnt'],
+        'deathcnt':seoul_total_data['deathcnt']-1
+    }   
 
     return render(request, 'seoul_map/index.html', context)
 

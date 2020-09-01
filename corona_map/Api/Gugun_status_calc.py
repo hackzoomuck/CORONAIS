@@ -57,8 +57,20 @@ def get_seoul_calc_data_list() -> list:
             seoul_gus_data_list = obj_dict['seoul']
             break
 
-    return list(seoul_gus_data_list)
+    return list(seoul_gus_data_list)    
 
+def get_seoul_total_data_dict() -> dict:
+    print('hahaha')
+    seoul_total = get_seoul_calc_data_list()
+    seoul_total_dict = {'defcnt':0,'isolingcnt':0,'isolclearcnt':0,'deathcnt':0}
+    for seoul_gugun in seoul_total:
+        seoul_total_dict['defcnt'] += seoul_gugun['defcnt']
+        seoul_total_dict['isolingcnt'] += seoul_gugun['isolingcnt']
+        seoul_total_dict['isolclearcnt'] += seoul_gugun['isolclearcnt']
+        seoul_total_dict['deathcnt'] += seoul_gugun['deathcnt']
+
+    return seoul_total_dict
+  
 def get_seoul_calc_all_data_list() -> list:
     cursor_obj = DBmanager.Infection_Smallcity_Calc().get_gugun_status_all_data_from_collection()
     return list(cursor_obj)
@@ -77,8 +89,3 @@ def get_daily_incdec_list() -> list:
         seoul_daily_data_list.append(seoul_daily_data_dict)
 
     return seoul_daily_data_list
-
-
-
-
-
