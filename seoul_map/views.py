@@ -61,10 +61,14 @@ def seoul_map(request):
 
     # popup 창에 seoul_data_add_lati_longi_list 데이터 저장
     for seoul_dict in seoul_data_add_lati_longi_list:
-        popup_info = '<h4>{}</h4> <p>총 확진자 {}</p><p>격리중 환자수 {}&nbsp;오늘 확진자 수 {}</p><p>격리 해제 수 {}&nbsp;오늘 완치자 수 {}</p><p>사망자 수 {}</p>'.format(seoul_dict['gubunsmall'], seoul_dict['defcnt'],seoul_dict['isolingcnt'],seoul_dict['incdec'],seoul_dict['isolclearcnt'],seoul_dict['curedcnt'],seoul_dict['deathcnt'])
+        if seoul_dict['gubunsmall'] == '강남구':
+            popup_info = '<h4 ><strong>{}</strong></h4> <p>총 확진자 {}</p><p>격리중 환자수 {},&nbsp;오늘 확진자 수 {}</p><p>격리 해제 수 {},&nbsp;오늘 완치자 수 {}</p><p>사망자 수 {}</p>'.format(
+                seoul_dict['gubunsmall'], seoul_dict['defcnt'], '비공개', seoul_dict['incdec'], '비공개', '비공개', '비공개')
+        else:
+            popup_info = '<h4><strong>{}</strong></h4> <p>총 확진자 {}</p><p>격리중 환자수 {},&nbsp;오늘 확진자 수 {}</p><p>격리 해제 수 {},&nbsp;오늘 완치자 수 {}</p><p>사망자 수 {}</p>'.format(seoul_dict['gubunsmall'], seoul_dict['defcnt'],seoul_dict['isolingcnt'],seoul_dict['incdec'],seoul_dict['isolclearcnt'],seoul_dict['curedcnt'],seoul_dict['deathcnt'])
         folium.Marker(
             location=[float(seoul_dict['lat']), float(seoul_dict['lng'])],
-            popup=folium.map.Popup(popup_info, max_width=200),
+            popup=folium.map.Popup(popup_info, max_width=300),
             icon=folium.Icon(color='red', icon='star')
         ).add_to(m)
 
