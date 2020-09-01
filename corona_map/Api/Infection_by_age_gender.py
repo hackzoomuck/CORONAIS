@@ -7,7 +7,7 @@ import requests
 import datetime
 
 def infection_by_age_gender():
-
+    print('성별/연령별 확진자 조회 서비스 - 입력 중 입니다.')
     inf_serviceKey = ['67xjSd3vhpWMN4oQ3DztMgLyq4Aa1ugw1ssq%2FHeJAeniNIwyPspLp7XpNoa8mBbTJQPc3dAxqvtFm57fJIfq8w%3D%3D',
                       'hFxBvUwCFBcRvWK6wJdgZXgFmjnogBAgCMQ%2BWfZmCQngtc%2FkNb%2FvVqfS2ouV%2BxKMAbEbE94ZYhW3m6A3hxKyig%3D%3D',
                       '%2BNZvj3PPWZaxtFa6tqekV3%2BWlT4NSYB4HY5kXLacieOJKfCtyZpafsGzvJsZzvOMg2KUGrKEIQyy9k58uA1g1A%3D%3D']
@@ -29,7 +29,6 @@ def infection_by_age_gender():
         html = res.text
         soup = BeautifulSoup(html, 'html.parser')
         item_list = soup.select('item')
-        print(html)
         for item in item_list:
             item_dict = {}
             # 확진자
@@ -52,5 +51,7 @@ def infection_by_age_gender():
             item_dict['id'] = int(dateis)
 
             comong.Infection_By_Age_Gender().add_user_on_collection(item_dict)
+
+        print('성별/연령별 확진자 조회 서비스 - 입력 완료.')
         return 'good! infection_by_age_gender'
     return 'NO! infection_by_age_gender'

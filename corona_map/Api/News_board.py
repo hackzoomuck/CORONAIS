@@ -8,6 +8,7 @@ import datetime
 
 
 def news_board_list():
+    print('기사 리스트 - 데이터 입력 중')
     main_url = 'https://yna.co.kr'
     url = 'https://ars.yna.co.kr/api/v2/sokbo?lang=KR&count=100&minute=800'
     response = requests.get(url)
@@ -39,4 +40,6 @@ def news_board_list():
         gisa_dict['title'] = news_title
         gisa_dict['content'] = gisa_content_str
         comong.News_Board().add_user_on_collection(gisa_dict)
+
+    print('기사 리스트 - 데이터 입력 완료')
     return "good! new board"
