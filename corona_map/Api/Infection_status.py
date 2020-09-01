@@ -18,8 +18,8 @@ def infection_status():
     nowDate = int(now.strftime('%Y%m%d'))
     params = {
         'serviceKey': SERVICE_KEY,
-        'pageNo': 10,
-        'numOfRows': 10,
+        'pageNo': 100,
+        'numOfRows': 100,
         'startCreateDt': 20200819,
         'endCreateDt': nowDate
     }
@@ -66,14 +66,14 @@ def infection_status():
         item_dict['statedt'] = item.find('statedt').string
         # 기준시간
         item_dict['statetime'] = item.find('statetime').string
-        item_list_result.append(item_dict)
+
 
         date_string = item.find('createdt').string[:10].split('-')
         dateis = ''.join(date_string)
         item_dict['id'] = int(dateis)
 
-        comong.Infection_Status().add_user_on_collection(item_dict)
+        item_list_result.append(item_dict)
+    comong.Infection_Status().add_user_on_collection(item_list_result)
+    print(item_list_result,'item_list_result==================================')
 
-        return 'good! infection_status.py'
-
-    return 'no! infection_status.py'
+    return 'infection_status.py complete'

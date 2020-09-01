@@ -32,37 +32,37 @@ def call_gugun_info(request):
 
 
 # infection_city collection 에서 {시도, 확진자 수} 데이터 전처리 함수
-def infection_city_all_values():
-    now = datetime.datetime.now()
-    # 오늘 날짜 했는 데, 아직 시도별 api 데이터가 업데이트 되지 않아서 지난 날 것을 호출함.
-    nowDate = int(now.strftime('%Y%m%d'))
-    # 하루의 시도별 데이터
-    infection_date_data = comong.Infection_City().get_users_from_collection({})
-
-    infection_city_all_values_list = []
-    for idd in infection_date_data:
-        item_dict = {}
-        # 등록일시분초 2020-08-14 10:36:59.393
-        item_dict['createdt'] = idd['createdt']
-        # 기준일시2020년 08월 14일 00시
-        item_dict['stdday'] = idd['stdday']
-        # 확진자 수(총 확진자 수)
-        item_dict['defcnt'] = idd['defcnt']
-        # 시도명(한글)
-        item_dict['gubun'] = idd['gubun']
-        # 시도명(영어)
-        item_dict['gubunen'] = idd['gubunen']
-        # 전일대비 증감 수
-        item_dict['incdec'] = idd['incdec']
-        # 격리 해제 수
-        item_dict['isolclearcnt'] = idd['isolclearcnt']
-        # 사망자 수
-        item_dict['deathcnt'] = idd['deathcnt']
-        # 격리중 환자수
-        item_dict['isolingcnt'] = idd['isolingcnt']
-        infection_city_all_values_list.append(item_dict)
-
-    return infection_city_all_values_list
+# def infection_city_all_values():
+#     # now = datetime.datetime.now()
+#     # 오늘 날짜 했는 데, 아직 시도별 api 데이터가 업데이트 되지 않아서 지난 날 것을 호출함.
+#     # nowDate = int(now.strftime('%Y%m%d'))
+#     # 하루의 시도별 데이터
+#     infection_date_data = comong.Infection_City().get_users_from_collection({})
+#
+#     infection_city_all_values_list = []
+#     for idd in infection_date_data:
+#         item_dict = {}
+#         # 등록일시분초 2020-08-14 10:36:59.393
+#         item_dict['createdt'] = idd['createdt']
+#         # 기준일시2020년 08월 14일 00시
+#         item_dict['stdday'] = idd['stdday']
+#         # 확진자 수(총 확진자 수)
+#         item_dict['defcnt'] = idd['defcnt']
+#         # 시도명(한글)
+#         item_dict['gubun'] = idd['gubun']
+#         # 시도명(영어)
+#         item_dict['gubunen'] = idd['gubunen']
+#         # 전일대비 증감 수
+#         item_dict['incdec'] = idd['incdec']
+#         # 격리 해제 수
+#         item_dict['isolclearcnt'] = idd['isolclearcnt']
+#         # 사망자 수
+#         item_dict['deathcnt'] = idd['deathcnt']
+#         # 격리중 환자수
+#         item_dict['isolingcnt'] = idd['isolingcnt']
+#         infection_city_all_values_list.append(item_dict)
+#
+#     return infection_city_all_values_list
 
 
 # infection_state collection 전국 코로나 현황 수 get함수
@@ -87,11 +87,118 @@ def infection_state_all_value():
     return item_dict
 
 
+'''
+# 작성자 : 최수녕
+# 함수 설명 : infection_city 테이블에서 id의 최댓값을 구하는 함수(가장 최근 날짜 구하기)
+# 리턴값 : id의 최댓값(숫자)
+# 분류 : 추후 API폴더로 이동 예정
+'''
+def infection_city_max_id():
+    max_id = comong.Infection_City().get_aggregate_users_from_collection([{'$group':{'_id':'null','total':{'$max':'$id'}}},{'$project':{'_id':0,'total':1}}])
+    max_id = list(max_id)[0]['total']
+    return max_id
+
+
+'''
+# 작성자 : 최수녕
+# 함수 설명 : 시도별 총확진자 구하는 함수
+# 리턴값 : 시/도 이름 list , 시/도에 따른 총확진자 list
+# 분류 : 추후 API폴더로 이동 예정
+'''
+def infection_city_all_values():
+    max_date = infection_city_max_id()
+    infection_date_data = comong.Infection_City().get_particular_users_from_collection({'$and':[{'id':max_date},{'gubun':{'$nin':['합계','검역']}}]},{'gubun': 1, 'defcnt': 1, '_id': 0})
+    i_city_all_key = []
+    i_city_all_value = []
+    for infection_data in infection_date_data:
+        i_city_all_key.append(infection_data['gubun'])
+        i_city_all_value.append(infection_data['defcnt'])
+    context = {'i_city_all_key': i_city_all_key, 'i_city_all_value': i_city_all_value}
+    return context
+
+
+'''
+# 작성자 : 최수녕
+# 함수 설명 : 시도별 일별 확진자 구하는 함수
+# 리턴값 : 시/도 이름 list , 시/도에 따른 확진자(전일대비 증감 수) list
+# 분류 : 추후 API폴더로 이동 예정
+# 현황 : 구현중
+'''
+def infection_city_oneday_values():
+    max_date = infection_city_max_id()
+    infection_date_data = comong.Infection_City().get_particular_users_from_collection({'$and':[{'id':max_date},{'gubun':{'$nin':['합계','검역']}}]},{'gubun': 1, 'incdec': 1, '_id': 0})
+    i_city_oneday_key = []
+    i_city_oneday_value = []
+    for infection_data in infection_date_data:
+        i_city_oneday_key.append(infection_data['gubun'])
+        i_city_oneday_value.append(infection_data['incdec'])
+    context = {'i_city_oneday_key': i_city_oneday_key, 'i_city_oneday_value': i_city_oneday_value}
+    return context
+
+
+'''
+# 작성자 : 최수녕
+# 함수 설명 : 전국 일별 코로나 총확진자 데이터 구하는 함수
+# 리턴값 : 날자값 list, 날자에 따른 일별 확진자 list
+# 분류 : 추후 API폴더로 이동 예정
+# 현황 : 구현중
+'''
+def infection_all_value():
+    now = datetime.datetime.now()
+    nowDate = int(now.strftime('%Y%m%d'))
+    pastday_at_this_time = datetime.datetime.now() - datetime.timedelta(days=7)
+    pastDate = int(pastday_at_this_time.strftime('%Y%m%d'))
+
+    infection_date_data = comong.Infection_Status().get_particular_users_from_collection({'$and':[{'id':{'$gte':pastDate}},{'id':{'$lte':nowDate}}]},{'id': 1, 'decidecnt': 1, '_id': 0})
+    i_state_all_key = []
+    i_state_all_value = []
+    for infection_data in infection_date_data:
+        i_state_all_key.append(infection_data['id'])
+        i_state_all_value.append(infection_data['decidecnt'])
+    context = {'i_state_all_key': i_state_all_key, 'i_state_all_value': i_state_all_value}
+    return context
+
+
+'''
+# 작성자 : 최수녕
+# 함수 설명 : 전국 일별(일별 순수 확진자) 코로나 확진자 데이터 구하는 함수
+# 리턴값 : 날자값 list, 날자에 따른 일별 확진자 list
+# 분류 : 추후 API폴더로 이동 예정
+'''
+def infection_oneday_value():
+    now = datetime.datetime.now()
+    nowDate = int(now.strftime('%Y%m%d'))
+    pastday_at_this_time = datetime.datetime.now() - datetime.timedelta(days=7)
+    pastDate = int(pastday_at_this_time.strftime('%Y%m%d'))
+
+    infection_date_data = comong.Infection_Status().get_particular_users_from_collection(
+        {'$and': [{'id': {'$gte': pastDate}}, {'id': {'$lte': nowDate}}]},
+        {'decidecnt': 1, 'id': 1, '_id': 0})
+
+    infection_data_list = list(infection_date_data)
+    oneday_value_list = []
+    oneday_key_list = []
+    for i in range(0, len(infection_data_list) - 1):
+        decidecnt_oneday_data = int(infection_data_list[i]['decidecnt'] - infection_data_list[i + 1]['decidecnt'])
+        id_oneday_data = infection_data_list[i]['id']
+        oneday_value_list.append(decidecnt_oneday_data)
+        oneday_key_list.append(id_oneday_data)
+
+    context = {'oneday_value_list': oneday_value_list, 'oneday_key_list': oneday_key_list}
+    return context
+
+
+'''
+# 작성자 : 최수녕
+# 함수 설명 : 나이별 치명률 평균값 구하는 함수
+# 리턴값 : 성별(여성/남성) list , 성별에 따른 치명률 list
+# 분류 : 추후 API폴더로 이동 예정
+'''
 def infection_by_age_all_value():
     infection_date_data = comong.Infection_By_Age_Gender().get_aggregate_users_from_collection(
         [
             {'$match': {'$and': [{'gubun': {'$not': {'$regex': '여성'}}}, {'gubun': {'$not': {'$regex': '남성'}}}]}},
-            {'$group': {'_id': '$gubun', 'mean_criticalrate': {'$sum': '$criticalrate'}}},
+            {'$group': {'_id': '$gubun', 'mean_criticalrate': {'$avg': '$criticalrate'}}},
             {'$sort': {'mean_criticalrate': -1}},
             {
                 '$project': {
@@ -114,11 +221,17 @@ def infection_by_age_all_value():
     return context
 
 
+'''
+# 작성자 : 최수녕
+# 함수 설명 : 성별 치명률 평균값 구하는 함수
+# 리턴값 : 성별(여성/남성) list , 성별에 따른 치명률 list
+# 분류 : 추후 API폴더로 이동 예정
+'''
 def infection_by_gender_all_value():
     infection_date_data = comong.Infection_By_Age_Gender().get_aggregate_users_from_collection(
         [
             {'$match': {'$or': [{'gubun': {'$regex': '여성'}}, {'gubun': {'$regex': '남성'}}]}},
-            {'$group': {'_id': '$gubun', 'mean_criticalrate': {'$sum': '$criticalrate'}}},
+            {'$group': {'_id': '$gubun', 'mean_criticalrate': {'$avg': '$criticalrate'}}},
             {'$sort': {'mean_criticalrate': -1}},
             {
                 '$project': {
@@ -140,35 +253,35 @@ def infection_by_gender_all_value():
     return context
 
 
+
 # 템플릿 적용
 def cois_main(request):
-    
-    item_list_result=infection_city_all_values()
+    # 총 확진자, 격리해제수, ... 구하기 위한 함수
     in_st_dict = infection_state_all_value()
-    item_df = pd.DataFrame(
-        columns=['createdt', 'stdday', 'defcnt', 'gubun', 'gubunen', 'incdec', 'isolclearcnt', 'deathcnt', 'isolingcnt'])
-    for a in item_list_result:
-        a_object = pd.Series(a)
-        item_df = item_df.append(a_object, ignore_index=True)
 
-    # 지역별 확진자 현황
-    barPlotData = item_df[['gubun', 'defcnt']].groupby('gubun').sum()
-    barPlotData = barPlotData.reset_index()
-    barPlotData = barPlotData.loc[barPlotData['gubun'] != '합계']
-    barPlotData.columns = ['gubun', 'defcnt']
-    barPlotData = barPlotData.sort_values(by='defcnt', ascending=False)
-    barPlotVals = barPlotData['defcnt'].values.tolist()
-    gubunNames = barPlotData['gubun'].values.tolist()
+    # 지역별 코로나 총확진자 현황
+    item_list_result = infection_city_all_values()
+    barPlotVals = item_list_result['i_city_all_key']
+    gubunNames = item_list_result['i_city_all_value']
 
-    # 날자별 코로나 현황
-    lineChartData = item_df[['stdday', item_df.columns[-1]]].groupby('stdday').sum()
-    lineChartData = lineChartData.reset_index()
-    lineChartData.columns = ['stdday', 'defcnt']
-    lineChartData = lineChartData.sort_values(by='defcnt', ascending=True)
-    lineChartVals = lineChartData['defcnt'].values.tolist()
-    dateTimes = lineChartData['stdday'].values.tolist()
+    # 지역별 코로나 일별확진자 현황
+    item_city_oneday_result = infection_city_oneday_values()
+    i_city_oneday_key = item_city_oneday_result['i_city_oneday_key']
+    i_city_oneday_value = item_city_oneday_result['i_city_oneday_value']
+
+
+    # 날자별 코로나 총확진자 현황
+    item_state_all_result = infection_all_value()
+    lineChartVals = item_state_all_result['i_state_all_key']
+    dateTimes = item_state_all_result['i_state_all_value']
+
+    # 날자별 코로나 일변확진자 현황
+    item_i_oneday_result = infection_oneday_value()
+    oneday_key_list = item_i_oneday_result['oneday_key_list']
+    oneday_value_list = item_i_oneday_result['oneday_value_list']
 
     ##################################################################################
+
     # 성별, 연령별
     # 연령별 데이터 가져오기
     age_result_dict = infection_by_age_all_value()
@@ -218,6 +331,11 @@ def infection_city_gubun_defcnt():
 # infection_city_gubun_defcnt() 함수 사용
 def folium_page(request):
     # mongodb collection infection_city에 api request해서 데이터 저장.
+    # print(Infection_city.infection_city())
+    # print(News_board.news_board_list())
+    # print(Infection_by_age_gender.infection_by_age_gender())
+    # print(Infection_status.infection_status())
+
 
     # print(Infection_city.infection_city())
     # print(News_board.news_board_list())

@@ -18,11 +18,19 @@ class Infection_City:
         assert cls.database
         return cls.database.find(_query)
 
+    def get_particular_users_from_collection(cls, *_query):
+        assert cls.database
+        return cls.database.find(_query[0], _query[1])
+
     def add_user_on_collection(cls, _data):
         if type(_data) is list:
             return cls.database.insert_many(_data)
         else:
             return cls.database.insert_one(_data)
+
+    def get_aggregate_users_from_collection(cls, _query):
+        assert cls.database
+        return cls.database.aggregate(_query)
 
 
 # collection infection_by_age_gender
@@ -71,6 +79,10 @@ class Infection_Status:
     def get_users_from_collection(cls, _query):
         assert cls.database
         return cls.database.find(_query)
+
+    def get_particular_users_from_collection(cls, *_query):
+        assert cls.database
+        return cls.database.find(_query[0], _query[1])
 
     def add_user_on_collection(cls, _data):
         if type(_data) is list:
