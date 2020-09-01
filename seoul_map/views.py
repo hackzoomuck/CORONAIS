@@ -12,7 +12,8 @@ def seoul_main(request):
 # 서울 지도
 def seoul_map(request):
     # 중심위치 잡아서 지도보여주기 위한 변수 입력.
-    m = folium.Map([37.562600, 126.991732], zoom_start=11)
+    m = folium.Map([37.562600, 126.991732], zoom_start=12)
+
     # 서울시 구 별로 구분시켜주는 선을 그려주기 위해서 seoul_line.json 사용
     with open('corona_map/static/json_data/seoul_line.json', mode='rt', encoding='utf-8') as sl:
         geo = json.loads(sl.read())
@@ -46,6 +47,8 @@ def seoul_map(request):
     ).add_to(m)
     m = m._repr_html_()  # updated
     context = {'my_map': m}
+
+
     return render(request, 'seoul_map/seoul_map.html', context)
 
 
