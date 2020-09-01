@@ -491,8 +491,9 @@ def get_seoul_data_list() -> list:
 
 def get_seoul_yesterday_data_list() -> list:
     print('서울 어제 데이터 꺼냄')
-    now_date = int(datetime.datetime.now().strftime('%Y%m%d'))-1
-    sql_query_0 = {'stdday': now_date}
+    timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
+    find_date = int(timestamp.strftime('%Y%m%d'))
+    sql_query_0 = {'stdday': find_date}
     sql_query_1 = {'_id': 0}
 
     cursor_obj = DBmanager.Infection_Smallcity().get_gugun_status_datas_from_collection(sql_query_0, sql_query_1)
