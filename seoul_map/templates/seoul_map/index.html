@@ -22,8 +22,7 @@
         options: {
             responsive: true,
             title: {
-                display: true,
-                text: ''
+                display: false
             },
             tooltips: {
                 mode: 'index',
@@ -35,18 +34,10 @@
             },
             scales: {
                 xAxes: [{
-                    display: true,
-                    scaleLabel: {
-                        display: true,
-                        labelString: 'Month'
-                    }
+                    display: true
                 }],
                 yAxes: [{
-                    display: true,
-                    scaleLabel: {
-                        display: true,
-                        labelString: 'Value'
-                    }
+                    display: true
                 }]
             }
         }
@@ -80,8 +71,7 @@
                     position: 'top',
                 },
                 title: {
-                    display: true,
-                    text: '지역별 확진자 추이'
+                    display: false
                 },
             }
         });
@@ -209,7 +199,7 @@
                 </div>
                 <!-- Card Body -->
                 <div class="card-body">
-                  <div class="chart-area">
+                  <div class="chart-area" style="height:fit-content ;">
                     <canvas id="line-chart">
 
                     </canvas>
@@ -227,7 +217,7 @@
                 </div>
                 <!-- Card Body -->
                 <div class="card-body">
-                  <div class="chart-area">
+                  <div class="chart-area" style="height:fit-content ;">
                     <canvas id="bar-chart">
 
                     </canvas>

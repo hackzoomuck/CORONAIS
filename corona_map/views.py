@@ -291,6 +291,7 @@ def folium_page(request):
 
 
 def coIs_home(request):
+    '''
     # 수녕, 서율, 지은
     sido_serviceKey = ['0',
                        'BjW9a8K51p0oRJ0hl%2BBpizJzZ9gT3e%2Beb75QhG9kXdeK9ENW7CCAl9nX28%2BRD97JlAsDrTv7StIwvUPCxA4iTw%3D%3D',
@@ -342,7 +343,8 @@ def coIs_home(request):
     # for a in item_list_result:
     #     a_object = pd.Series(a)
     #     item_df = item_df.append(a_object, ignore_index=True)
-    return render(request, 'corona_map/coIs_home.html', {'soup_data': item_list_result})
+    '''
+    return render(request, 'corona_map/coIs_home.html')
 
 def chart_bar(request):
     # 수녕, 서율, 지은
@@ -498,6 +500,7 @@ def news_board_list(request):
     json_url_list = []
     json_data = json_text['DATA']
     word = '코로나'
+
     for json_url in json_data:
         title_url_dict = dict()
         title_url_dict['datetime'] = json_url['DATETIME']
@@ -505,6 +508,7 @@ def news_board_list(request):
             title_url_dict['url'] = urljoin(main_url, json_url['URL'])
             json_url_list.append(title_url_dict)
     gisa_result_list = []
+
     for corona_url in json_url_list:
         response = requests.get(corona_url['url'])
         html = response.text
