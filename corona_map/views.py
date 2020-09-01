@@ -33,7 +33,7 @@ def call_gugun_info(request):
 def infection_city_all_values():
     now = datetime.datetime.now()
     # 오늘 날짜 했는 데, 아직 시도별 api 데이터가 업데이트 되지 않아서 지난 날 것을 호출함.
-    nowDate = int(now.strftime('%Y%m%d'))-1
+    nowDate = int(now.strftime('%Y%m%d'))
     # 하루의 시도별 데이터
     infection_date_data = comong.Infection_City().get_users_from_collection({})
 
@@ -215,17 +215,19 @@ def seoul(request):
 def infection_city_gubun_defcnt():
     now = datetime.datetime.now()
     # 오늘 날짜 했는 데, 아직 시도별 api 데이터가 업데이트 되지 않아서 지난 날 것을 호출함.
-    nowDate = int(now.strftime('%Y%m%d'))
+    timestamp = now - datetime.timedelta(days=1)
+    nowDate = int(timestamp.strftime('%Y%m%d'))
+
     # 하루의 시도별 데이터
     infection_date_data = comong.Infection_City().get_users_from_collection({'id':nowDate})
-
+    print(infection_date_data)
     gubun = []
     defcnt = []
     for idd in infection_date_data:
         gubun.append(idd['gubun'])
         defcnt.append(idd['defcnt'])
     # {시도:확진자 수}
-    dict_gubun_defcnt = dict(zip(gubun,defcnt))
+    dict_gubun_defcnt = dict(zip(gubun, defcnt))
     return dict_gubun_defcnt
 
 
