@@ -477,7 +477,6 @@ def get_seoul_data_list() -> list:
     sql_query_1 = {'_id': 0}
 
     cursor_obj = DBmanager.Infection_Smallcity().get_gugun_status_datas_from_collection(sql_query_0, sql_query_1)
-
     cursor_objs_list = list(cursor_obj)
     print(cursor_objs_list)
     seoul_gus_data_list = list()
@@ -509,3 +508,4 @@ def get_seoul_yesterday_data_list() -> list:
 
     # print(seoul_gus_data_list)
     return seoul_gus_data_list
+

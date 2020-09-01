@@ -19,9 +19,6 @@ urlpatterns = [
     path('cois-main/', views.cois_main, name='cois-main'),
 
     #
-    path('seoul/', views.seoul, name='seoul'),
-
-    #
     path('folium_page/', views.folium_page, name='folium'),
 
     # 테스트 페이지
