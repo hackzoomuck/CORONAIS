@@ -216,10 +216,10 @@ def infection_city_gubun_defcnt():
 # infection_city_gubun_defcnt() 함수 사용
 def folium_page(request):
     # mongodb collection infection_city에 api request해서 데이터 저장.
-    print(Infection_city.infection_city())
-    print(News_board.news_board_list())
-    print(Infection_by_age_gender.infection_by_age_gender())
-    print(Infection_status.infection_status())
+    # print(Infection_city.infection_city())
+    # print(News_board.news_board_list())
+    # print(Infection_by_age_gender.infection_by_age_gender())
+    # print(Infection_status.infection_status())
 
 
     soup_sido_data_list = infection_city_gubun_defcnt()
@@ -242,9 +242,9 @@ def folium_page(request):
         data_df = data_df.append(series_obj, ignore_index=True)
 
     # 보여주는 중심부의 위도, 경도
-    seoul_center = [35.5, 127.8]
+    seoul_center = [35.5, 132.0]
     # 맵이 center 에 위치하고, zoom 레벨은 7로 시작하는 맵 m
-    m = folium.Map(location=seoul_center, zoom_start=6, width='100%', height='100%')
+    m = folium.Map(location=seoul_center, zoom_start=7, width='100%', height='100%')
 
     # Choropleth 레이어를 만들고, 맵 m에 추가
     folium.Choropleth(
