@@ -98,7 +98,7 @@ class News_Board:
     client = pymongo.MongoClient(host='localhost',
                                  port=27017)
     # collection 생성
-    database = client['coronais']['seoul_map']
+    database = client['coronais']['news_board']
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = object.__new__(cls, *args, **kwargs)

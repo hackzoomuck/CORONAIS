@@ -16,8 +16,8 @@ def seoul_data_init():
 
 def folium_data_init():
     # mongodb collection infection_city에 api request해서 데이터 저장.
-    Infection_city.infection_city()
-    News_board.news_board_list()
-    Infection_by_age_gender.infection_by_age_gender()
-    Infection_status.infection_status()
+    # Infection_city.infection_city()
+    # News_board.news_board_list()
+    # Infection_by_age_gender.infection_by_age_gender()
+    # Infection_status.infection_status()
 
