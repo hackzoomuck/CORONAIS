@@ -91,13 +91,13 @@ def infection_oneday_value():
 
     infection_date_data = comong.Infection_Status().get_particular_users_from_collection(
         {'$and': [{'id': {'$gte': pastDate}}, {'id': {'$lte': nowDate}}]},
-        {'decidecnt': 1, 'id': 1, '_id': 0})
+        {'decidecnt': 1, 'id': 1, '_id': 0}).sort('id',1)
 
     infection_data_list = list(infection_date_data)
     oneday_value_list = []
     oneday_key_list = []
     for i in range(0, len(infection_data_list) - 1):
-        decidecnt_oneday_data = int(infection_data_list[i]['decidecnt'] - infection_data_list[i + 1]['decidecnt'])
+        decidecnt_oneday_data = int(infection_data_list[i + 1]['decidecnt'] - infection_data_list[i]['decidecnt'])
         id_oneday_data = infection_data_list[i]['id']
         oneday_value_list.append(decidecnt_oneday_data)
         oneday_key_list.append(id_oneday_data)

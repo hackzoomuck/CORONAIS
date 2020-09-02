@@ -20,4 +20,4 @@ def folium_data_init():
     # News_board.news_board_list()
     # Infection_by_age_gender.infection_by_age_gender()
     # Infection_status.infection_status()
-
+    pass
