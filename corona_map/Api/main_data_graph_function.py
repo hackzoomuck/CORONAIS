@@ -98,7 +98,7 @@ def infection_oneday_value():
     oneday_key_list = []
     for i in range(0, len(infection_data_list) - 1):
         decidecnt_oneday_data = int(infection_data_list[i + 1]['decidecnt'] - infection_data_list[i]['decidecnt'])
-        id_oneday_data = infection_data_list[i]['id']
+        id_oneday_data = infection_data_list[i+1]['id']
         oneday_value_list.append(decidecnt_oneday_data)
         oneday_key_list.append(id_oneday_data)
 
