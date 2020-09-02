@@ -10,7 +10,7 @@ from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list
 
 # 데이터 init 함수
 def call_data_init(request):
-    # seoul_data_init()
+    seoul_data_init()
     folium_data_init()
     return render(request, 'corona_map/coIs_init.html', {'soup_data': 'call_data_init에서 넘어옴'})
 
