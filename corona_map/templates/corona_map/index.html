@@ -427,7 +427,7 @@
                                 <div class="col-xl-12 col-lg-6">
                                     <!-- Card Header - Dropdown -->
                                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                        <h6 class="m-0 font-weight-bold text-primary">일별 총 확진자 추이</h6>
+                                        <h6 class="m-0 font-weight-bold text-primary">성별 치명률</h6>
                                         <div class="dropdown no-arrow">
                                             <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                 <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
@@ -437,29 +437,32 @@
                                     <!-- Card Body -->
                                     <div class="card-body">
                                         <div class="chart-area" style="height:fit-content ;">
-                                            <canvas id="line-chart"></canvas>
+                                            <div id="canvas-holder">
+                                                    <canvas id="pie-chart" style="display: block;height: 250px;width: 442px;"></canvas>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
+                        <div class="card shadow mb-4">
                             <div class="row">
                                 <div class="col-lg-12 mb-6">
                                     <!-- Project Card Example -->
                                     <!-- Card Header - Dropdown -->
                                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                        <h6 class="m-0 font-weight-bold text-primary">지역별 총 확진자 추이</h6>
+                                        <h6 class="m-0 font-weight-bold text-primary">연령별 치명률</h6>
                                     </div>
                                     <!-- Card Body -->
                                     <div class="card-body">
                                         <div class="chart-area" style="height:fit-content ;">
-                                            <canvas id="bar-chart"></canvas>
+                                            <!-- --->
+                                            <canvas id="old-bar-chart" style="display: block;height: 250px;width: 442px;"></canvas>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-
                         </div>
                     </div>
 
@@ -477,15 +480,13 @@
                         <div class="card shadow mb-6">
                             <!-- Card Header - Dropdown -->
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-primary">성별 치명률</h6>
+                                <h6 class="m-0 font-weight-bold text-primary">일별 총 확진자</h6>
                             </div>
                             <!-- Card Body -->
                             <div class="card-body">
                                 <div class="chart-area" style="height:fit-content ;">
-                                    <div id="canvas-holder">
-                                        <canvas id="pie-chart"></canvas>
-                                    </div>
-                                    {% comment %}<iframe src="{% url 'by-age-gender' %}" width="100%" height="400px" frameborder="0" marginwidth="0" marginheight="0"></iframe>{% endcomment %}
+                                    <!--원래 pie-chart 자리였는데 바꿈 - 혹시몰라 기록해둠 -->
+                                    <canvas id="line-chart"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -499,12 +500,12 @@
                         <div class="card shadow mb-6">
                             <!-- Card Header - Dropdown -->
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-primary">연령별 치명률</h6>
+                                <h6 class="m-0 font-weight-bold text-primary">지역별 총 확진자</h6>
                             </div>
                             <!-- Card Body -->
                             <div class="card-body" >
                                 <div class="chart-area" style="height:fit-content ;">
-                                    <canvas id="old-bar-chart"></canvas>
+                                    <canvas id="bar-chart"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -516,12 +517,12 @@
                 <div class="row">
 
                     <!-- Content Column -->
-                    <div class="col-lg-6 mb-12">
+                    <div class="col-lg-6 mb-12" style="top:20px">
                         <!-- Project Card Example -->
                         <div class="card shadow mb-6">
                             <!-- Card Header - Dropdown -->
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-primary">전국 일별 순수 확진자(전일 대비 증감수) 추이</h6>
+                                <h6 class="m-0 font-weight-bold text-primary">전국 일별 순수 확진자(전일 대비 증감수)</h6>
                             </div>
                             <!-- Card Body -->
                             <div class="card-body">
@@ -535,12 +536,12 @@
 
                     <!-- Approach -->
                     <!-- Content Column -->
-                    <div class="col-lg-6 mb-12">
+                    <div class="col-lg-6 mb-12" style="top:20px">
                         <!-- Project Card Example -->
                         <div class="card shadow mb-6">
                             <!-- Card Header - Dropdown -->
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-primary">지역별 하루 확진자 추이</h6>
+                                <h6 class="m-0 font-weight-bold text-primary">지역별 하루 순수 확진자(전일 대비 증감수)</h6>
                             </div>
                             <!-- Card Body -->
                             <div class="card-body" >
