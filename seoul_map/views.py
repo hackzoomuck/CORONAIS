@@ -31,10 +31,10 @@ def seoul_main(request):
         'area_list':area_list,
         'area_daily_incdec_list':area_daily_incdec_list,
       
-        'defcnt':seoul_total_data['defcnt'],
-        'isolclearcnt':seoul_total_data['isolclearcnt'],
-        'isolingcnt':seoul_total_data['isolingcnt'],
-        'deathcnt':seoul_total_data['deathcnt']-1
+        'defcnt':format(seoul_total_data['defcnt'], ','),
+        'isolclearcnt':format(seoul_total_data['isolclearcnt'], ','),
+        'isolingcnt':format(seoul_total_data['isolingcnt'], ','),
+        'deathcnt':format(seoul_total_data['deathcnt'], ',')
     }   
     
     return render(request, 'seoul_map/index.html', context)
@@ -66,9 +66,9 @@ def seoul_map(request):
     for seoul_dict in seoul_data_add_lati_longi_list:
         if seoul_dict['gubunsmall'] == '강남구':
             popup_info = '<h4 ><strong>{}</strong></h4> <p>총 확진자 {}</p><p>격리중 환자수 {},&nbsp;오늘 확진자 수 {}</p><p>격리 해제 수 {},&nbsp;오늘 완치자 수 {}</p><p>사망자 수 {}</p>'.format(
-                seoul_dict['gubunsmall'], seoul_dict['defcnt'], '비공개', seoul_dict['incdec'], '비공개', '비공개', '비공개')
+                seoul_dict['gubunsmall'], format(seoul_dict['defcnt'], ','), '비공개', format(seoul_dict['incdec'], ','), '비공개', '비공개', '비공개')
         else:
-            popup_info = '<h4><strong>{}</strong></h4> <p>총 확진자 {}</p><p>격리중 환자수 {},&nbsp;오늘 확진자 수 {}</p><p>격리 해제 수 {},&nbsp;오늘 완치자 수 {}</p><p>사망자 수 {}</p>'.format(seoul_dict['gubunsmall'], seoul_dict['defcnt'],seoul_dict['isolingcnt'],seoul_dict['incdec'],seoul_dict['isolclearcnt'],seoul_dict['curedcnt'],seoul_dict['deathcnt'])
+            popup_info = '<h4><strong>{}</strong></h4> <p>총 확진자 {}</p><p>격리중 환자수 {},&nbsp;오늘 확진자 수 {}</p><p>격리 해제 수 {},&nbsp;오늘 완치자 수 {}</p><p>사망자 수 {}</p>'.format(seoul_dict['gubunsmall'], format(seoul_dict['defcnt'], ','),format(seoul_dict['isolingcnt'], ','),format(seoul_dict['incdec'], ','),format(seoul_dict['isolclearcnt'], ','),format(seoul_dict['curedcnt'], ','),format(seoul_dict['deathcnt'], ','))
         folium.Marker(
             location=[float(seoul_dict['lat']), float(seoul_dict['lng'])],
             popup=folium.map.Popup(popup_info, max_width=300),

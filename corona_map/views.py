@@ -89,8 +89,8 @@ def cois_main(request):
 
     context = {'barCityAllVals': barCityAllVals, 'barCityAllKeys': barCityAllKeys,
                'lineAllVals': lineAllVals, 'lineAllKeys': lineAllKeys, 'oldPlotVals': oldPlotVals, 'oldGubunNames': oldGubunNames,
-               'genderPlotVals': genderPlotVals, 'genderGubunNames': genderGubunNames, 'decideCnt': in_st_dict['decidecnt'],
-               'clearCnt': in_st_dict['clearcnt'],'examCnt': in_st_dict['examcnt'],'deathCnt': in_st_dict['deathcnt'],
+               'genderPlotVals': genderPlotVals, 'genderGubunNames': genderGubunNames, 'decideCnt': format(in_st_dict['decidecnt'], ','),
+               'clearCnt': format(in_st_dict['clearcnt'], ','),'examCnt': format(in_st_dict['examcnt'], ','),'deathCnt': format(in_st_dict['deathcnt'], ','),
                'lineOnedayKeys': lineOnedayKeys, 'lineOnedayVals': lineOnedayVals,
                'barCityOnedayKeys': barCityOnedayKeys, 'barCityOnedayVals': barCityOnedayVals}
 
@@ -157,7 +157,7 @@ def folium_page(request):
 
 
     for si_ma in sido_lati_longi:
-        sido_html = '<h4>{}</h4><h4>총 확진자 {}</h4><a href='.format(si_ma['시'], soup_sido_data_list[si_ma['시']])+si_ma['링크']+'target="_blank">{}</a>'.format(si_ma['시'])
+        sido_html = '<h4>{}</h4><h4>총 확진자 {}</h4><a href='.format(si_ma['시'],format(soup_sido_data_list[si_ma['시']], ',') )+si_ma['링크']+'target="_blank">{}</a>'.format(si_ma['시'])
         folium.Marker([si_ma['위도'], si_ma['경도']],
             popup=folium.map.Popup(sido_html, parse_html=False, max_width=200), #.decode('cp949').encode('utf-8')
             icon=folium.Icon(color='red', icon='star')
