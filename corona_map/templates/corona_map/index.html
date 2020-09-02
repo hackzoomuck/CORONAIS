@@ -31,8 +31,8 @@
             labels: {{lineAllKeys|safe}},
             datasets: [{
                 label: '인원 (명)',
-                backgroundColor: window.chartColors.red,
-                borderColor: window.chartColors.red,
+                backgroundColor: window.chartColors.yellow,
+                borderColor: window.chartColors.yellow,
                 data: {{lineAllVals|safe}},
                 fill: false,
             }]
@@ -69,8 +69,8 @@
             labels: {{lineOnedayKeys|safe}},
             datasets: [{
                 label: '인원 (명)',
-                backgroundColor: window.chartColors.red,
-                borderColor: window.chartColors.red,
+                backgroundColor: window.chartColors.blue,
+                borderColor: window.chartColors.blue,
                 data: {{lineOnedayVals|safe}},
                 fill: false,
             }]
@@ -119,8 +119,8 @@
         labels: {{barCityOnedayKeys|safe}},
         datasets: [{
             label: '인원 (명)',
-            backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
-            borderColor: window.chartColors.red,
+            backgroundColor: color(window.chartColors.green).alpha(0.5).rgbString(),
+            borderColor: window.chartColors.green,
             borderWidth: 1,
             data: {{barCityOnedayVals|safe}}
         }]
@@ -134,8 +134,8 @@
             datasets: [{
                 data:{{ genderPlotVals|safe }},
                 backgroundColor: [
-                    window.chartColors.red,
-                    window.chartColors.blue
+                    window.chartColors.pink,
+                    window.chartColors.skyblue
                 ],
                 label: 'Dataset 1'
             }],
@@ -152,8 +152,8 @@
         labels: {{oldGubunNames|safe}},
         datasets: [{
             label: '연령별 치명률',
-            backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
-            borderColor: window.chartColors.red,
+            backgroundColor: color(window.chartColors.purple).alpha(0.5).rgbString(),
+            borderColor: window.chartColors.purple,
             borderWidth: 1,
             data: {{oldPlotVals|safe}}
         }]
