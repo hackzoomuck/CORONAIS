@@ -20,8 +20,8 @@ def infection_by_age_gender():
         'serviceKey': SERVICE_KEY,
         'numOfRows': 10,
         'pageNo': 10,
-        'startCreateDt': '20200310',
-        'endCreateDt': '20200814'  # datetime.datetime.now()
+        'startCreateDt': nowDate,
+        'endCreateDt': nowDate  # datetime.datetime.now()
     }
     res = requests.get(url, params=params)
 

@@ -20,7 +20,7 @@ def infection_status():
         'serviceKey': SERVICE_KEY,
         'pageNo': 100,
         'numOfRows': 100,
-        'startCreateDt': 20200819,
+        'startCreateDt': nowDate,
         'endCreateDt': nowDate
     }
     res = requests.get(url, params=params)
