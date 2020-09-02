@@ -2,7 +2,7 @@
 설명 추가 예정
 # 프로젝트 정보
 ## 프로젝트 기간
-2020.08.10 ~ 진행중
+2020.08.10 ~ 2020.09.04
 ## 인원
 3명
 ## 개발 플랫폼
@@ -13,15 +13,21 @@ pycharm, robomongo
 Python 3.7.8
 ## 사용 기술
 Django, MongoDB
+# 데이터베이스 구조 (MongoDB)
+![ERD](https://raw.githubusercontent.com/hackzoomuck/CORONAIS/master/coronais-photo/ERD.png)
+# 스토리보드
+![스토리보드-1](https://raw.githubusercontent.com/hackzoomuck/CORONAIS/master/coronais-photo/스토리보드1.jpg)
+![스토리보드-1](https://raw.githubusercontent.com/hackzoomuck/CORONAIS/master/coronais-photo/스토리보드2.jpg)
 # 제공 서비스
 ## 전국 코로나 현황
-내용추가
+![메인페이지-1](https://raw.githubusercontent.com/hackzoomuck/CORONAIS/master/coronais-photo/mainpage-1.PNG)
+![메인페이지-2](https://raw.githubusercontent.com/hackzoomuck/CORONAIS/master/coronais-photo/mainpage-2.PNG)
 ## 서울시 코로나 현황
-내용추가
-## 그래프
-내용추가
+![서울시 코로나 현황-1](https://raw.githubusercontent.com/hackzoomuck/CORONAIS/master/coronais-photo/detail-seoul-1.PNG)
+![서울시 코로나 현황-2](https://raw.githubusercontent.com/hackzoomuck/CORONAIS/master/coronais-photo/detail-seoul-2.PNG)
 ## 뉴스
-내용추가
+![뉴스 게시글 목록-1](https://raw.githubusercontent.com/hackzoomuck/CORONAIS/master/coronais-photo/corona-new-1.PNG)
+![뉴스 게시글-1](https://raw.githubusercontent.com/hackzoomuck/CORONAIS/master/coronais-photo/corona-new-detail-1.PNG)
 # 환경 설정
 ## 가상 환경 설정 (venv)
 새로운 venv 환경설정시, <br>
@@ -60,6 +66,3 @@ client = pymongo.MongoClient(host='localhost', port=27017)
 # 남은 작업
 1. 전국 시, 군, 구 별 현황.
 데이터가 너무 많아 아직 서울시만 제공..
-2. 몽고 디비에서 조회해서 데이터 사용하기.
-3. 댓글 로그인
-4. 메인 페이지(chart 수정하기)
