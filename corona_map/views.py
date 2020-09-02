@@ -55,6 +55,20 @@ def cois_main(request):
     oldGubunNames = age_result_dict['age_key_list']
     oldPlotVals = age_result_dict['age_value_list']
 
+    age_dict = dict()
+    for k, v in zip(oldGubunNames, oldPlotVals):
+        age_dict[k] = v
+
+    age_dict = dict(sorted(age_dict.items(), reverse=True))
+
+    oldGubunNames.clear()
+    oldPlotVals.clear()
+
+    for k in age_dict.keys():
+        oldGubunNames.append(k)
+
+    for v in age_dict.values():
+        oldPlotVals.append(v)
 
     # 성별 치명률 현황
     gender_result_dict = infection_by_gender_all_value()
