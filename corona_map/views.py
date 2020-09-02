@@ -1,90 +1,27 @@
 from django.shortcuts import render
-from urllib.parse import unquote
-from bs4 import BeautifulSoup
 import pandas as pd
 import folium
 import json
-import requests
-import corona_map.MongoDbManager as comong
-
-import pymongo
-import datetime
-
+from corona_map.Api.Infection_status import infection_state_all_value
+from corona_map.Api.Infection_city import infection_city_gubun_defcnt
 from corona_map.Api.main_data_graph_function import infection_city_all_values, infection_city_oneday_values, infection_all_value, infection_oneday_value, infection_by_age_all_value, infection_by_gender_all_value
-
 from corona_map.Api.data_init import seoul_data_init, folium_data_init
 from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list
 
+# 데이터 init 함수
 def call_data_init(request):
-    # seoul_data_init()
+    seoul_data_init()
     folium_data_init()
-    return render(request, 'corona_map/coIs_home.html', {'soup_data': 'call_data_init에서 넘어옴'})
+    return render(request, 'corona_map/coIs_init.html', {'soup_data': 'call_data_init에서 넘어옴'})
 
 
 def call_gugun_info(request):
     data = get_seoul_calc_data_list()
-    return render(request, 'corona_map/coIs_home.html', {'soup_data': data})
-
-
-# infection_city collection 에서 {시도, 확진자 수} 데이터 전처리 함수
-# def infection_city_all_values():
-#     # now = datetime.datetime.now()
-#     # 오늘 날짜 했는 데, 아직 시도별 api 데이터가 업데이트 되지 않아서 지난 날 것을 호출함.
-#     # nowDate = int(now.strftime('%Y%m%d'))
-#     # 하루의 시도별 데이터
-#     infection_date_data = comong.Infection_City().get_users_from_collection({})
-#
-#     infection_city_all_values_list = []
-#     for idd in infection_date_data:
-#         item_dict = {}
-#         # 등록일시분초 2020-08-14 10:36:59.393
-#         item_dict['createdt'] = idd['createdt']
-#         # 기준일시2020년 08월 14일 00시
-#         item_dict['stdday'] = idd['stdday']
-#         # 확진자 수(총 확진자 수)
-#         item_dict['defcnt'] = idd['defcnt']
-#         # 시도명(한글)
-#         item_dict['gubun'] = idd['gubun']
-#         # 시도명(영어)
-#         item_dict['gubunen'] = idd['gubunen']
-#         # 전일대비 증감 수
-#         item_dict['incdec'] = idd['incdec']
-#         # 격리 해제 수
-#         item_dict['isolclearcnt'] = idd['isolclearcnt']
-#         # 사망자 수
-#         item_dict['deathcnt'] = idd['deathcnt']
-#         # 격리중 환자수
-#         item_dict['isolingcnt'] = idd['isolingcnt']
-#         infection_city_all_values_list.append(item_dict)
-#
-#     return infection_city_all_values_list
-
-
-
-# infection_state collection 전국 코로나 현황 수 get함수
-def infection_state_all_value():
-    now = datetime.datetime.now()
-    # 오늘 날짜 호출함.
-    nowDate = int(now.strftime('%Y%m%d'))-1
-    # 하루의 시도별 데이터
-    infection_date_data = comong.Infection_Status().get_users_from_collection({'id': nowDate})
-
-    item_dict = {}
-    for idd in infection_date_data:
-        # 확진자 수
-        item_dict['decidecnt'] = idd['decidecnt']
-        # 격리해제 수
-        item_dict['clearcnt'] = idd['clearcnt']
-        # 검사진행 수
-        item_dict['examcnt'] = idd['examcnt']
-        # 사망자 수
-        item_dict['deathcnt'] = idd['deathcnt']
-
-    return item_dict
-
+    return render(request, 'corona_map/coIs_init.html', {'soup_data': data})
 
 
 # 템플릿 적용
+# infection_state_all_value() 함수 사용
 def cois_main(request):
     # 총 확진자수, 격리해제수, 검사진행수, 사망자수 구하기 위한 함수
     in_st_dict = infection_state_all_value()
@@ -133,26 +70,6 @@ def cois_main(request):
 
     return render(request, 'corona_map/index.html', context)
 
-
-# infection_city collection 에서 {시도, 확진자 수} 데이터 전처리 함수
-def infection_city_gubun_defcnt():
-    now = datetime.datetime.now()
-    # 오늘 날짜 했는 데, 아직 시도별 api 데이터가 업데이트 되지 않아서 지난 날 것을 호출함.
-    timestamp = now - datetime.timedelta(days=1)
-    nowDate = int(timestamp.strftime('%Y%m%d'))
-    # print(nowDate, 'nowDate나오냐')
-
-    # 하루의 시도별 데이터
-    infection_date_data = comong.Infection_City().get_users_from_collection({'id':nowDate})
-    # print(list(infection_date_data))
-    gubun = []
-    defcnt = []
-    for idd in infection_date_data:
-        gubun.append(idd['gubun'])
-        defcnt.append(idd['defcnt'])
-    # {시도:확진자 수}
-    dict_gubun_defcnt = dict(zip(gubun, defcnt))
-    return dict_gubun_defcnt
 
 
 # 한국 지도에서 시도별, 확진자 수
@@ -223,240 +140,3 @@ def folium_page(request):
     m = m._repr_html_()  # updated
     context = {'mapdata': m}
     return render(request, 'corona_map/folium_page.html', context)
-
-
-def coIs_home(request):
-    '''
-    # 수녕, 서율, 지은
-    sido_serviceKey = ['0',
-                       'BjW9a8K51p0oRJ0hl%2BBpizJzZ9gT3e%2Beb75QhG9kXdeK9ENW7CCAl9nX28%2BRD97JlAsDrTv7StIwvUPCxA4iTw%3D%3D',
-                       '2']
-    url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson'
-    SERVICE_KEY = unquote(sido_serviceKey[1])
-    params = {
-        'serviceKey': SERVICE_KEY,
-        'pageNo': 10,
-        'numOfRows': 10,
-        'startCreateDt': 20200811,
-        'endCreateDt': 20200818
-    }
-    res = requests.get(url, params=params)
-    html = res.text
-    soup = BeautifulSoup(html, 'html.parser')
-    item_list = soup.select('item')
-    item_list_result = []
-    for idx, item in enumerate(item_list, 1):
-        item_dict = {}
-        try:
-            # 확진자 수
-            item_dict['decidecnt'] = int(item.find('decidecnt').string)
-        except (AttributeError, KeyError):
-            item_dict['decidecnt'] = 0
-        # 격리해제 수
-        try:
-            item_dict['clearcnt'] = int(item.find('clearcnt').string)
-        except (AttributeError, KeyError):
-            item_dict['clearcnt'] = 0
-        # 검사진행 수
-        item_dict['examcnt'] = int(item.find('examcnt').string)
-        # 사망자 수
-        item_dict['deathcnt'] = int(item.find('deathcnt').string)
-        # 결과 음성 수
-        item_dict['resutlnegcnt'] = int(item.find('resutlnegcnt').string)
-        # 누적 검사 수
-        item_dict['accexamcnt'] = int(item.find('accexamcnt').string)
-        # 누적 검사 완료 수
-        item_dict['accexamcompcnt'] = int(item.find('accexamcompcnt').string)
-        # 누적 환진률
-        item_dict['accdefrate'] = item.find('accdefrate').string
-        # 기준일
-        item_dict['statedt'] = item.find('statedt').string
-        # 기준시간
-        item_dict['statetime'] = item.find('statetime').string
-        item_list_result.append(item_dict)
-    # item_df = pd.DataFrame(columns=['gubun', 'gubunen', 'incdec', 'isolclearcnt', 'qurrate', 'deathcnt', 'isolingcnt', 'overflowcnt', 'localocccnt'])
-    # for a in item_list_result:
-    #     a_object = pd.Series(a)
-    #     item_df = item_df.append(a_object, ignore_index=True)
-    '''
-    return render(request, 'corona_map/coIs_home.html')
-
-def chart_bar(request):
-    # 수녕, 서율, 지은
-    sido_serviceKey = ['0',
-                       'hFxBvUwCFBcRvWK6wJdgZXgFmjnogBAgCMQ%2BWfZmCQngtc%2FkNb%2FvVqfS2ouV%2BxKMAbEbE94ZYhW3m6A3hxKyig%3D%3D',
-                       '2']
-    url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19SidoInfStateJson'
-    SERVICE_KEY = unquote(sido_serviceKey[1])
-    params = {
-        'serviceKey': SERVICE_KEY,
-        'pageNo': 100,
-        'numOfRows': 100,
-        'startCreateDt': 20200811,
-        'endCreateDt': 20200818
-    }
-    res = requests.get(url, params=params)
-    html = res.text
-    soup = BeautifulSoup(html, 'html.parser')
-    item_list = soup.select('item')
-    item_list_result = []
-    for idx, item in enumerate(item_list, 1):
-        item_dict = {}
-        # 등록일시분초 2020-08-14 10:36:59.393
-        item_dict['createdt'] = item.find('createdt').string
-        # 기준일시2020년 08월 14일 00시
-        item_dict['stdday'] = item.find('stdday').string
-        # 시도명(한글)
-        item_dict['gubun'] = item.find('gubun').string
-        # 시도명(영어)
-        item_dict['gubunen'] = item.find('gubunen').string
-        # 전일대비 증감 수
-        item_dict['incdec'] = item.find('incdec').string
-        # 격리 해제 수
-        item_dict['isolclearcnt'] = item.find('isolclearcnt').string
-        # 10만명당 발생률
-        item_dict['qurrate'] = item.find('qurrate').string
-        # 사망자 수
-        item_dict['deathcnt'] = int(item.find('deathcnt').string)
-        # 격리중 환자수
-        item_dict['isolingcnt'] = item.find('isolingcnt').string
-        # 해외유입 수
-        item_dict['overflowcnt'] = item.find('overflowcnt').string
-        # 지역발생 수
-        item_dict['localocccnt'] = int(item.find('localocccnt').string)
-        item_list_result.append(item_dict)
-    item_df = pd.DataFrame(
-        columns=['createdt', 'stdday', 'gubun', 'gubunen', 'incdec', 'isolclearcnt', 'qurrate', 'deathcnt', 'isolingcnt', 'overflowcnt',
-                 'localocccnt'])
-    for a in item_list_result:
-        a_object = pd.Series(a)
-        item_df = item_df.append(a_object, ignore_index=True)
-
-    totalCount = item_df['deathcnt'].sum()
-
-    # 지역별 확진자 현황
-    barPlotData = item_df[['gubun', 'localocccnt']].groupby('gubun').sum()
-    barPlotData = barPlotData.reset_index()
-    barPlotData = barPlotData.loc[barPlotData['gubun'] != '합계']
-    barPlotData.columns = ['gubun', 'localocccnt']
-    barPlotData = barPlotData.sort_values(by='localocccnt', ascending=False)
-    barPlotVals = barPlotData['localocccnt'].values.tolist()
-    gubunNames = barPlotData['gubun'].values.tolist()
-
-    # 날자별 코로나 현황
-    lineChartData = item_df[['stdday', item_df.columns[-1]]].groupby('stdday').sum()
-    lineChartData = lineChartData.reset_index()
-    lineChartData.columns = ['stdday', 'localocccnt']
-    lineChartData = lineChartData.sort_values(by='localocccnt', ascending=True)
-    lineChartVals = lineChartData['localocccnt'].values.tolist()
-    dateTimes = lineChartData['stdday'].values.tolist()
-
-    context = {'totalCount': totalCount, 'barPlotVals': barPlotVals, 'gubunNames': gubunNames, 'lineChartVals': lineChartVals, 'dateTimes': dateTimes}
-    return render(request, 'corona_map/chart_bar.html', context)
-
-
-
-def chart_bar_by_age_gender(request):
-
-    sido_serviceKey = ['0',
-                       '%2BNZvj3PPWZaxtFa6tqekV3%2BWlT4NSYB4HY5kXLacieOJKfCtyZpafsGzvJsZzvOMg2KUGrKEIQyy9k58uA1g1A%3D%3D',
-                       '2']
-    url = 'http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19GenAgeCaseInfJson'
-    SERVICE_KEY = unquote(sido_serviceKey[1])
-    params = {
-        'serviceKey': SERVICE_KEY,
-        'pageNo': 10,
-        'numOfRows': 10,
-        'startCreateDt': 20200811,
-        'endCreateDt': 20200818
-    }
-    response = requests.get(url, params=params)
-
-    html = response.text
-    soup = BeautifulSoup(html, 'html.parser')
-    item_list = soup.select('item')
-    item_list_result = []
-    for idx, item in enumerate(item_list, 1):
-        item_dict = {}
-        # 확진자
-        item_dict['confcase'] = int(item.find('confcase').string)
-        # 확진률
-        item_dict['confcaserate'] = item.find('confcaserate').string
-        # 등록일시분초
-        item_dict['createdt'] = item.find('createdt').string
-        # 치명률
-        try:
-            item_dict['criticalrate'] = float(item.find('criticalrate').string)
-        except Exception:
-            item_dict['criticalrate'] = 0
-        # 사망자
-        item_dict['death'] = int(item.find('death').string)
-        # 사망률
-        item_dict['deathrate'] = item.find('deathrate').string
-        # 구분(성별,연령별)0-9
-        item_dict['gubun'] = item.find('gubun').string
-
-        item_list_result.append(item_dict)
-    item_df = pd.DataFrame(columns=['confcase', 'confcaserate', 'createdt', 'criticalrate', 'death', 'deathrate', 'gubun'])
-    for a in item_list_result:
-        a_object = pd.Series(a)
-        item_df = item_df.append(a_object, ignore_index=True)
-
-    totalCount = item_df['death'].sum()
-
-    # 연령별 치명률 시각화
-    oldPlotData = item_df[['gubun', 'criticalrate']].groupby('gubun').mean()
-    oldPlotData = oldPlotData.reset_index()
-    oldPlotData.columns = ['gubun', 'criticalrate']
-    oldPlotData = oldPlotData.sort_values(by='criticalrate', ascending=False)
-    oldPlotData = oldPlotData.loc[(oldPlotData['gubun'] != '여성') & (oldPlotData['gubun'] != '남성')]
-    oldPlotVals = oldPlotData['criticalrate'].values.tolist()
-    oldGubunNames = oldPlotData['gubun'].values.tolist()
-
-    # 성별 치명률 시각화
-    genderPlotData = item_df[['gubun', 'criticalrate']].groupby('gubun').mean()
-    genderPlotData = genderPlotData.reset_index()
-    genderPlotData.columns = ['gubun', 'criticalrate']
-    genderPlotData = genderPlotData.sort_values(by='criticalrate', ascending=False)
-    genderPlotData = genderPlotData.loc[(genderPlotData['gubun'] == '여성') | (genderPlotData['gubun'] == '남성')]
-    genderPlotVals = genderPlotData['criticalrate'].values.tolist()
-    genderGubunNames = genderPlotData['gubun'].values.tolist()
-
-    context = {'totalCount': totalCount, 'oldPlotVals': oldPlotVals, 'oldGubunNames': oldGubunNames, 'genderPlotVals': genderPlotVals, 'genderGubunNames': genderGubunNames}
-    return render(request, 'corona_map/by_age_gender_piechart.html', context)
-
-from urllib.parse import urljoin
-
-def news_board_list(request):
-    main_url = 'https://yna.co.kr'
-    url = 'https://ars.yna.co.kr/api/v2/sokbo?lang=KR&count=100&minute=800'
-    response = requests.get(url)
-    json_text = response.json()
-    json_url_list = []
-    json_data = json_text['DATA']
-    word = '코로나'
-
-    for json_url in json_data:
-        title_url_dict = dict()
-        title_url_dict['datetime'] = json_url['DATETIME']
-        if word in json_url['TITLE']:
-            title_url_dict['url'] = urljoin(main_url, json_url['URL'])
-            json_url_list.append(title_url_dict)
-    gisa_result_list = []
-
-    for corona_url in json_url_list:
-        response = requests.get(corona_url['url'])
-        html = response.text
-        soup = BeautifulSoup(html, 'html.parser')
-        news_title = soup.select_one('title').text.split('|')[0]
-        tag_test = '#articleWrap > div.content01.scroll-article-zone01 > div > div > div.story-news.article p'
-        gisa_list = soup.select(tag_test)
-        gisa_content_str = ''
-        gisa_dict = dict()
-        for gisa in gisa_list:
-            gisa_content_str += gisa.text
-        gisa_dict['datetime'] = corona_url['datetime'][0:8]
-        gisa_dict['title'] = news_title
-        gisa_dict['content'] = gisa_content_str
-        gisa_result_list.append(gisa_dict)
-    return render(request, 'corona_map/test_api.html', {'news_board_list': gisa_result_list})

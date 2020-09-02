@@ -21,3 +21,4 @@ def folium_data_init():
     # Infection_by_age_gender.infection_by_age_gender()
     # Infection_status.infection_status()
     pass
+

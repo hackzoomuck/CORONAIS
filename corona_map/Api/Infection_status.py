@@ -77,3 +77,29 @@ def infection_status():
     # print(item_list_result,'item_list_result==================================')
 
     return 'infection_status.py complete'
+
+
+
+# infection_state collection 전국 코로나 현황 수 get함수
+def infection_state_all_value():
+    now_date = 0
+    if int(datetime.datetime.now().strftime('%H')) >= 14:
+        now_date = int(datetime.datetime.now().strftime('%Y%m%d'))
+    else:
+        timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
+        now_date = int(timestamp.strftime('%Y%m%d'))
+    # 하루의 시도별 데이터
+    infection_date_data = comong.Infection_Status().get_users_from_collection({'id': now_date})
+
+    item_dict = {}
+    for idd in infection_date_data:
+        # 확진자 수
+        item_dict['decidecnt'] = idd['decidecnt']
+        # 격리해제 수
+        item_dict['clearcnt'] = idd['clearcnt']
+        # 검사진행 수
+        item_dict['examcnt'] = idd['examcnt']
+        # 사망자 수
+        item_dict['deathcnt'] = idd['deathcnt']
+
+    return item_dict

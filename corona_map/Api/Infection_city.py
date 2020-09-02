@@ -64,3 +64,24 @@ def infection_city():
 
         print('보건복지부_코로나19시,도발생_현황 조회 서비스 - 데이터 입력 완료')
         return "good infection_city.py"
+
+# infection_city collection 에서 {시도, 확진자 수} 데이터 전처리 함수
+def infection_city_gubun_defcnt():
+    now_date = 0
+    if int(datetime.datetime.now().strftime('%H')) >= 14:
+        now_date = int(datetime.datetime.now().strftime('%Y%m%d'))
+    else:
+        timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
+        now_date = int(timestamp.strftime('%Y%m%d'))
+
+    # 하루의 시도별 데이터
+    infection_date_data = comong.Infection_City().get_users_from_collection({'id':now_date})
+    # print(list(infection_date_data))
+    gubun = []
+    defcnt = []
+    for idd in infection_date_data:
+        gubun.append(idd['gubun'])
+        defcnt.append(idd['defcnt'])
+    # {시도:확진자 수}
+    dict_gubun_defcnt = dict(zip(gubun, defcnt))
+    return dict_gubun_defcnt
