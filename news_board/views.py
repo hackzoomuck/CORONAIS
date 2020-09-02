@@ -4,6 +4,7 @@ from django.shortcuts import render
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import requests
+import base64
 
 import corona_map.MongoDbManager as comong
 
@@ -59,6 +60,9 @@ def news_board_list(request):
 def news_comment_insert(request):
     id = request.POST['id']
     comment = request.POST['comment']
+    comment = comment.encode("UTF-8")
+    comment = base64.b64encode(comment)
+    comment = comment.decode("UTF-8")
     context = {'id': id, 'comment': comment}
     result = comong.News_Board_Comment().add_user_on_collection(context)
     if result:
@@ -71,5 +75,16 @@ def news_comment_insert(request):
 # Ajax로 댓글 조회 불러오기
 def news_comment_list(request, id):
     print('news_comment_list진입')
-    comment_list = comong.News_Board_Comment().get_particular_users_from_collection({'id': str(id)}, {'_id': 0}).sort('id',-1)
-    return HttpResponse(json.dumps(list(comment_list)), content_type='application/json')
+    comment_data_list = comong.News_Board_Comment().get_particular_users_from_collection({'id': str(id)}, {'_id': 0}).sort('id',-1)
+    comment_list = list()
+    for data_dict in comment_data_list:
+        comment = data_dict['comment']
+        comment = comment.encode("UTF-8")
+        comment = base64.b64decode(comment)
+        comment = comment.decode("UTF-8")
+        dict = {
+            'id':data_dict['id'],
+            'comment':comment
+        }
+        comment_list.append(dict)
+    return HttpResponse(json.dumps(comment_list), content_type='application/json')
