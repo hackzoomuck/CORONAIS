@@ -6,20 +6,18 @@ import folium
 import json
 import requests
 import corona_map.MongoDbManager as comong
-from corona_map.Api import Infection_city, Infection_status, Infection_by_age_gender, News_board
+
 import pymongo
 import datetime
-from corona_map.Api.Gugun_status import get_seoul_data_list, init_gugun_data
-from corona_map.Api.Infection_city import infection_city
-from corona_map.Api.Infection_by_age_gender import infection_by_age_gender
-from corona_map.Api.Infection_status import infection_status
+
 from corona_map.Api.main_data_graph_function import infection_city_all_values, infection_city_oneday_values, infection_all_value, infection_oneday_value, infection_by_age_all_value, infection_by_gender_all_value
 
-from corona_map.Api.data_init import seoul_data_init
+from corona_map.Api.data_init import seoul_data_init, folium_data_init
 from corona_map.Api.Gugun_status_calc import get_seoul_calc_data_list
 
 def call_data_init(request):
-    seoul_data_init()
+    # seoul_data_init()
+    folium_data_init()
     return render(request, 'corona_map/coIs_home.html', {'soup_data': 'call_data_init에서 넘어옴'})
 
 
@@ -67,7 +65,7 @@ def call_gugun_info(request):
 def infection_state_all_value():
     now = datetime.datetime.now()
     # 오늘 날짜 호출함.
-    nowDate = int(now.strftime('%Y%m%d'))
+    nowDate = int(now.strftime('%Y%m%d'))-1
     # 하루의 시도별 데이터
     infection_date_data = comong.Infection_Status().get_users_from_collection({'id': nowDate})
 
@@ -140,7 +138,7 @@ def cois_main(request):
 def infection_city_gubun_defcnt():
     now = datetime.datetime.now()
     # 오늘 날짜 했는 데, 아직 시도별 api 데이터가 업데이트 되지 않아서 지난 날 것을 호출함.
-    timestamp = now - datetime.timedelta(days=2)
+    timestamp = now - datetime.timedelta(days=1)
     nowDate = int(timestamp.strftime('%Y%m%d'))
     # print(nowDate, 'nowDate나오냐')
 
@@ -160,11 +158,6 @@ def infection_city_gubun_defcnt():
 # 한국 지도에서 시도별, 확진자 수
 # infection_city_gubun_defcnt() 함수 사용
 def folium_page(request):
-    # mongodb collection infection_city에 api request해서 데이터 저장.
-    # print(Infection_city.infection_city())
-    # print(News_board.news_board_list())
-    # print(Infection_by_age_gender.infection_by_age_gender())
-    # print(Infection_status.infection_status())
 
     soup_sido_data_list = infection_city_gubun_defcnt()
     geo_sido_data = 'corona_map/static/json_data/korea_sido.json'

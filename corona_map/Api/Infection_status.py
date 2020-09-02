@@ -74,6 +74,6 @@ def infection_status():
 
         item_list_result.append(item_dict)
     comong.Infection_Status().add_user_on_collection(item_list_result)
-    print(item_list_result,'item_list_result==================================')
+    # print(item_list_result,'item_list_result==================================')
 
     return 'infection_status.py complete'

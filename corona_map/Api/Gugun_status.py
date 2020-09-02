@@ -463,15 +463,12 @@ def get_seoul_info_dict() -> dict:
     return seoul_data_dict
 
 
-def init_gugun_data():
-    print('서울 데이터 입력 중')
+def init_gugun_data() -> bool:
     data_items_dict = get_seoul_info_dict()
     DBmanager.Infection_Smallcity().add_gugun_status_datas_on_collection(data_items_dict)
-    print('서울 데이터 입력 완료')
-
+    return True
 
 def get_seoul_data_list() -> list:
-    print('서울 데이터 꺼냄')
     now_date = int(datetime.datetime.now().strftime('%Y%m%d'))
     sql_query_0 = {'stdday':now_date}
     sql_query_1 = {'_id': 0}
@@ -489,7 +486,6 @@ def get_seoul_data_list() -> list:
     return seoul_gus_data_list
 
 def get_seoul_yesterday_data_list() -> list:
-    print('서울 어제 데이터 꺼냄')
     timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
     find_date = int(timestamp.strftime('%Y%m%d'))
     sql_query_0 = {'stdday': find_date}
