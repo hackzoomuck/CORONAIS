@@ -5,7 +5,6 @@ import corona_map.MongoDbManager as DBmanager
 
 
 def get_seoul_calc_data_dict() -> dict():
-    print('서울 데이터 계산 시작')
     seoul_gu_data_list = Gugun_status.get_seoul_data_list()
     seoul_gu_yesterday_data_list = Gugun_status.get_seoul_yesterday_data_list()
 
@@ -30,8 +29,6 @@ def get_seoul_calc_data_dict() -> dict():
         'stdday': int(datetime.datetime.now().strftime('%Y%m%d'))
     }
 
-    #print(seoul_calc_data_dict['stdday'])
-    print('서울 데이터 계산 끝')
     return seoul_calc_data_dict
 
 
@@ -39,16 +36,21 @@ def get_seoul_calc_data_dict() -> dict():
 
 def init_seoul_calc_data():
     seoul_data_dict = get_seoul_calc_data_dict()
-    print('서울 계산 데이터 insert')
     DBmanager.Infection_Smallcity_Calc().add_gugun_status_datas_on_collection(seoul_data_dict)
 
 def get_seoul_calc_data_list() -> list:
-    print('계산된 서울 데이터 꺼냄')
-    now_date = int(datetime.datetime.now().strftime('%Y%m%d'))
+    now_date = 0
+    if int(datetime.datetime.now().strftime('%H')) >= 14:
+        now_date = int(datetime.datetime.now().strftime('%Y%m%d'))
+    else:
+        timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
+        now_date = int(timestamp.strftime('%Y%m%d'))
+    print(now_date)
     sql_query_0 = {'stdday': now_date}
     sql_query_1 = {'_id': 0}
 
     cursor_obj = DBmanager.Infection_Smallcity_Calc().get_gugun_status_datas_from_collection(sql_query_0, sql_query_1)
+
 
     cursor_objs_list = list(cursor_obj)
     seoul_gus_data_list = list()
@@ -61,7 +63,6 @@ def get_seoul_calc_data_list() -> list:
     return list(seoul_gus_data_list)    
 
 def get_seoul_total_data_dict() -> dict:
-    print('hahaha')
     seoul_total = get_seoul_calc_data_list()
     seoul_total_dict = {'defcnt':0,'isolingcnt':0,'isolclearcnt':0,'deathcnt':0}
     for seoul_gugun in seoul_total:
