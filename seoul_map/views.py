@@ -10,15 +10,18 @@ def seoul_main(request):
     daily_incdec_list = list()
 
     for data in daily_gu_all_data_list:
-        datetime_list.append(data['stdday'])
+        datetime_data = str(data['stdday'])
+        datetime_list.append(datetime_data[4:6] + '.' + datetime_data[6:])
         daily_incdec_list.append(data['incdec'])
+
+    del datetime_list[0]
+    del daily_incdec_list[0]
 
     daily_gu_data_list = list(get_seoul_calc_data_list())
     area_list = list()
     area_daily_incdec_list = list()
 
     for data in daily_gu_data_list:
-        # print(data)
         area_list.append(data['gubunsmall'])
         area_daily_incdec_list.append(data['incdec'])
         

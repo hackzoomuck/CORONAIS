@@ -40,11 +40,23 @@ def cois_main(request):
     # 날자별 코로나 총확진자 현황
     item_state_all_result = infection_all_value()
     lineAllKeys = item_state_all_result['i_state_all_key']
+    print(lineAllKeys)
+    before_lineAllKeys = list()
+    for i in lineAllKeys:
+        before_lineAllKeys.append(str(i)[4:6]+'.'+str(i)[6:])
+    lineAllKeys = before_lineAllKeys
+    print(lineAllKeys)
+
     lineAllVals = item_state_all_result['i_state_all_value']
 
     # 날자별 코로나 일별확진자 현황
     item_i_oneday_result = infection_oneday_value()
+    before_lineOnedayKeys = list()
     lineOnedayKeys = item_i_oneday_result['oneday_key_list']
+    for i in lineOnedayKeys:
+        before_lineOnedayKeys.append(str(i)[4:6] + '.' + str(i)[6:])
+    lineOnedayKeys = before_lineOnedayKeys
+
     lineOnedayVals = item_i_oneday_result['oneday_value_list']
 
     ##################################################################################
@@ -57,7 +69,7 @@ def cois_main(request):
 
     age_dict = dict()
     for k, v in zip(oldGubunNames, oldPlotVals):
-        age_dict[k] = v
+        age_dict[k] = float(int(v*100))/100
 
     age_dict = dict(sorted(age_dict.items(), reverse=True))
 

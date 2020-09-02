@@ -14,8 +14,7 @@ def get_seoul_calc_data_dict() -> dict():
         seoul_gu_calc_data_dict['gubunsmall'] = new['gubunsmall']       # 구/군명(한글)
         seoul_gu_calc_data_dict['defcnt'] = int(new['defcnt'])               # 확진자 수(총확진자 현재감염중 + 총 완치수 + 사망자 수)
         seoul_gu_calc_data_dict['isolingcnt'] = int(new['isolingcnt'])       # 격리중 환자수(현재확진자수 감염중)
-        print(new['gubunsmall'])
-        print( int(new['isolclearcnt']))
+
         seoul_gu_calc_data_dict['isolclearcnt'] = int(new['isolclearcnt'])   # 격리 해제 수(총 완치자)
         seoul_gu_calc_data_dict['deathcnt'] = int(new['deathcnt'])           # 사망자 수
 
@@ -45,7 +44,7 @@ def get_seoul_calc_data_list() -> list:
     else:
         timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
         now_date = int(timestamp.strftime('%Y%m%d'))
-    print(now_date)
+
     sql_query_0 = {'stdday': now_date}
     sql_query_1 = {'_id': 0}
 
