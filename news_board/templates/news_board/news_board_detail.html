@@ -3,6 +3,19 @@
 {% block content%}
 <script>
 /*
+ * 댓글입력 시 공백체크 함수
+ */
+function check(){
+    var str = document.getElementById('comment')
+    if(str.value == '' || str.value == null){
+        alert('댓글을 입력해주세요');
+        return false;
+    }
+}
+
+
+
+/*
  * 페이지 로드되자마자 댓글 조회 불러오기
  */
 $(document).ready(function(){
@@ -14,6 +27,9 @@ $(document).ready(function(){
  * 댓글 등록하기(Ajax)
  */
 function ajax_insert_comment(){
+
+    check()
+
     $.ajax({
         type:'POST',
         url : {% url 'news-comment-insert'%},
