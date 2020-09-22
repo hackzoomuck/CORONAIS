@@ -31,6 +31,7 @@ def cois_main(request):
     barCityAllKeys = item_list_result['i_city_all_key']
     barCityAllVals = item_list_result['i_city_all_value']
 
+
     # 지역별 코로나 일별확진자 현황
     item_city_oneday_result = infection_city_oneday_values()
     barCityOnedayKeys = item_city_oneday_result['i_city_oneday_key']
@@ -40,12 +41,10 @@ def cois_main(request):
     # 날자별 코로나 총확진자 현황
     item_state_all_result = infection_all_value()
     lineAllKeys = item_state_all_result['i_state_all_key']
-    print(lineAllKeys)
     before_lineAllKeys = list()
     for i in lineAllKeys:
         before_lineAllKeys.append(str(i)[4:6]+'.'+str(i)[6:])
     lineAllKeys = before_lineAllKeys
-    print(lineAllKeys)
 
     lineAllVals = item_state_all_result['i_state_all_value']
 

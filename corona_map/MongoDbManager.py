@@ -4,8 +4,7 @@ import pymongo
 class Infection_City:
     _instance = None
     # 몽고디비연결
-    client = pymongo.MongoClient(host='localhost',
-                                 port=27017)
+    client = pymongo.MongoClient('mongodb+srv://coronais:1q2w3e4r@cluster0.uy7ix.mongodb.net/coronais?retryWrites=true&w=majority')
     # collection 생성
     database = client['coronais']['infection_city']
 
@@ -37,8 +36,7 @@ class Infection_City:
 class Infection_By_Age_Gender:
     _instance = None
     # 몽고디비연결
-    client = pymongo.MongoClient(host='localhost',
-                                 port=27017)
+    client = pymongo.MongoClient('mongodb+srv://coronais:1q2w3e4r@cluster0.uy7ix.mongodb.net/coronais?retryWrites=true&w=majority')
     # collection 생성
     database = client['coronais']['infection_by_age_gender']
 
@@ -66,8 +64,7 @@ class Infection_By_Age_Gender:
 class Infection_Status:
     _instance = None
     # 몽고디비연결
-    client = pymongo.MongoClient(host='localhost',
-                                 port=27017)
+    client = pymongo.MongoClient('mongodb+srv://coronais:1q2w3e4r@cluster0.uy7ix.mongodb.net/coronais?retryWrites=true&w=majority')
     # collection 생성
     database = client['coronais']['infection_status']
 
@@ -95,8 +92,7 @@ class Infection_Status:
 class News_Board:
     _instance = None
     # 몽고디비연결
-    client = pymongo.MongoClient(host='localhost',
-                                 port=27017)
+    client = pymongo.MongoClient('mongodb+srv://coronais:1q2w3e4r@cluster0.uy7ix.mongodb.net/coronais?retryWrites=true&w=majority')
     # collection 생성
     database = client['coronais']['news_board']
     def __new__(cls, *args, **kwargs):
@@ -121,8 +117,7 @@ class News_Board:
 class News_Board_Comment:
     _instance = None
     # 몽고디비연결
-    client = pymongo.MongoClient(host='localhost',
-                                 port=27017)
+    client = pymongo.MongoClient('mongodb+srv://coronais:1q2w3e4r@cluster0.uy7ix.mongodb.net/coronais?retryWrites=true&w=majority')
     # collection 생성
     database = client['coronais']['news_board_comment']
     def __new__(cls, *args, **kwargs):
@@ -155,8 +150,7 @@ class Infection_Smallcity:
 
     _instance = None
     # 몽고디비연결
-    client = pymongo.MongoClient(host='localhost',
-                                 port=27017)
+    client = pymongo.MongoClient('mongodb+srv://coronais:1q2w3e4r@cluster0.uy7ix.mongodb.net/coronais?retryWrites=true&w=majority')
     # collection 생성
     database = client['coronais']['infection_smallcity']
 
@@ -183,8 +177,7 @@ class Infection_Smallcity_Calc:
 
     _instance = None
     # 몽고디비연결
-    client = pymongo.MongoClient(host='localhost',
-                                 port=27017)
+    client = pymongo.MongoClient('mongodb+srv://coronais:1q2w3e4r@cluster0.uy7ix.mongodb.net/coronais?retryWrites=true&w=majority')
     # collection 생성
     database = client['coronais']['infection_smallcity_calc']
 
