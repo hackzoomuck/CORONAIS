@@ -9,7 +9,6 @@ import corona_map.MongoDbManager as comong
 # 작성자 : 최수녕
 # 함수 설명 : infection_city 테이블에서 id의 최댓값을 구하는 함수(가장 최근 날짜 구하기)
 # 리턴값 : id의 최댓값(숫자)
-# 분류 : 추후 API폴더로 이동 예정
 '''
 def infection_city_max_id():
     max_id = comong.Infection_City().get_aggregate_users_from_collection([{'$group':{'_id':'null','total':{'$max':'$id'}}},{'$project':{'_id':0,'total':1}}])
@@ -21,7 +20,6 @@ def infection_city_max_id():
 # 작성자 : 최수녕
 # 함수 설명 : 시도별 총확진자 구하는 함수
 # 리턴값 : 시/도 이름 list , 시/도에 따른 총확진자 list
-# 분류 : 추후 API폴더로 이동 예정
 '''
 def infection_city_all_values():
     max_date = infection_city_max_id()
@@ -39,8 +37,6 @@ def infection_city_all_values():
 # 작성자 : 최수녕
 # 함수 설명 : 시도별 일별 확진자 구하는 함수
 # 리턴값 : 시/도 이름 list , 시/도에 따른 확진자(전일대비 증감 수) list
-# 분류 : 추후 API폴더로 이동 예정
-# 현황 : 구현중
 '''
 def infection_city_oneday_values():
     max_date = infection_city_max_id()
@@ -58,8 +54,6 @@ def infection_city_oneday_values():
 # 작성자 : 최수녕
 # 함수 설명 : 전국 일별 코로나 총확진자 데이터 구하는 함수
 # 리턴값 : 날자값 list, 날자에 따른 일별 확진자 list
-# 분류 : 추후 API폴더로 이동 예정
-# 현황 : 구현중
 '''
 def infection_all_value():
     now = datetime.datetime.now()
@@ -81,7 +75,6 @@ def infection_all_value():
 # 작성자 : 최수녕
 # 함수 설명 : 전국 일별(일별 순수 확진자) 코로나 확진자 데이터 구하는 함수
 # 리턴값 : 날자값 list, 날자에 따른 일별 확진자 list
-# 분류 : 추후 API폴더로 이동 예정
 '''
 def infection_oneday_value():
     now = datetime.datetime.now()
@@ -110,7 +103,6 @@ def infection_oneday_value():
 # 작성자 : 최수녕
 # 함수 설명 : 나이별 치명률 평균값 구하는 함수
 # 리턴값 : 성별(여성/남성) list , 성별에 따른 치명률 list
-# 분류 : 추후 API폴더로 이동 예정
 '''
 def infection_by_age_all_value():
     infection_date_data = comong.Infection_By_Age_Gender().get_aggregate_users_from_collection(
@@ -143,7 +135,6 @@ def infection_by_age_all_value():
 # 작성자 : 최수녕
 # 함수 설명 : 성별 치명률 평균값 구하는 함수
 # 리턴값 : 성별(여성/남성) list , 성별에 따른 치명률 list
-# 분류 : 추후 API폴더로 이동 예정
 '''
 def infection_by_gender_all_value():
     infection_date_data = comong.Infection_By_Age_Gender().get_aggregate_users_from_collection(

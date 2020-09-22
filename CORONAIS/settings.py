@@ -83,7 +83,7 @@ DATABASES = {
         'NAME': 'coronais', # DB명
         'USER': 'coronais', # 데이터베이스 계정
         'PASSWORD': 'coronais', # 계정 비밀번호
-        'HOST': 'localhost', # 데이테베이스 IP
+        'HOST': 'mongodb+srv://coronais:1q2w3e4r@cluster0.uy7ix.mongodb.net/coronais?retryWrites=true&w=majority', # 데이테베이스 IP
         'PORT': '27017', # 데이터베이스 port
      }
 }
